@@ -9,17 +9,16 @@ struct dados {
 };
 
 typedef struct cabecalho_mensagem {
-  uint8_t marcador;
-  uint16_t tamanho:6; // talvez seja 8 bits
-  uint16_t sequencia:4;
-  uint16_t tipo:6; // talvez seja 8 bits
+  unsigned char marcador;
+  uint16_t  tamanho_seq_tipo; // talvez seja 8 bits
+  char dados[];
 } cabecalho_mensagem;
 
 typedef struct fim_mensagem {
   uint8_t paridade;
 } fim_mensagem;
 
-void mandarMensagem(unsigned int tam, unsigned int seq, unsigned int tipo, char* dados);
+void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo, char* dados);
 void iniciaSocket();
 
 

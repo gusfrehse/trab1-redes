@@ -23,7 +23,8 @@ int main() {
   char* buf = "1234567890123";
 
   iniciaSocket();
-  mandarMensagem(3 + sizeof(buf), 0, 0, buf);
+  mandarMensagem(strlen(buf) + 1, 0, 0, buf);
+  
 
   //close(s);
   printf("mandei\n");

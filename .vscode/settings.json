@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "ioctl.h": "c",
+        "if_packet.h": "c",
+        "inet.h": "c"
+    }
+}

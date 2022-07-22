@@ -11,17 +11,24 @@
 #include <unistd.h>
 
 #include "ConexaoRawSocket.h"
+#include "rede.h"
 
 int main() {
-  char curr_byte;
+  cabecalho_mensagem msg;
 
   int s = ConexaoRawSocket("lo");
-  while (read(s, &curr_byte, 1) == 1) {
-    if (curr_byte == 0b01111110) {
+  while (read(s, &msg, sizeof(msg))) {
+    if (msg.marcador == 0b01111110) {
       printf("Recebi byte de identificação!\n");
+      int tam = msg.tamanho_seq_tipo >> 10;
+      int seq = msg.tamanho_seq_tipo >> 6 & ((1 << 5) -1);
+      char *dados;
+      dados = malloc(tam);
+      read(s, dados, tam);
+      printf("dados: %s\n", dados);
     }
 
-    printf("recebi: 0x%x\n", curr_byte);
+    printf("recebi: 0x%x\n", msg.tamanho_seq_tipo);
   }
   close(s);
 
