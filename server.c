@@ -13,14 +13,18 @@
 #include "ConexaoRawSocket.h"
 
 int main() {
-  char buf2[11];
+  char curr_byte;
 
   int s = ConexaoRawSocket("lo");
-  read(s, buf2, 10);
+  while (read(s, &curr_byte, 1) == 1) {
+    if (curr_byte == 0b01111110) {
+      printf("Recebi byte de identificação!\n");
+    }
+
+    printf("recebi: 0x%x\n", curr_byte);
+  }
   close(s);
 
-  buf2[10] = '\0';
-  printf("recebi: '%s'\n", buf2);
 
   printf("sucesso\n");
 

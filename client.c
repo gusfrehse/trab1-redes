@@ -11,8 +11,13 @@
 #include <unistd.h>
 
 #include "ConexaoRawSocket.h"
+#include "rede.h"
 
 int main() {
+  printf("%d\n", sizeof(cabecalho_mensagem));
+  return 0;
+
+
   int s = ConexaoRawSocket("lo");
   char* buf = "1234567890123";
 
