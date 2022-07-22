@@ -11,7 +11,6 @@ struct dados {
 typedef struct cabecalho_mensagem {
   unsigned char marcador;
   uint16_t  tamanho_seq_tipo; // talvez seja 8 bits
-  char dados[];
 } cabecalho_mensagem;
 
 typedef struct fim_mensagem {
