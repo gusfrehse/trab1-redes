@@ -14,14 +14,17 @@
 #include "rede.h"
 
 int main() {
-  printf("%d\n", sizeof(cabecalho_mensagem));
-  return 0;
+  //printf("%d\n", sizeof(cabecalho_mensagem));
+  //return 0;
 
 
-  int s = ConexaoRawSocket("lo");
+  //int s = ConexaoRawSocket("lo");
+  char marcador[14] = {0b01111110};
   char* buf = "1234567890123";
 
-  write(s, buf, strlen(buf) + 1);
-  close(s);
+  iniciaSocket();
+  mandarMensagem(3 + sizeof(buf), 0, 0, buf);
+
+  //close(s);
   printf("mandei\n");
 }

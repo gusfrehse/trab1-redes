@@ -19,6 +19,9 @@ typedef struct fim_mensagem {
   uint8_t paridade;
 } fim_mensagem;
 
+void mandarMensagem(unsigned int tam, unsigned int seq, unsigned int tipo, char* dados);
+void iniciaSocket();
+
 
 
 #endif

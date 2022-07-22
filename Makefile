@@ -2,9 +2,10 @@
 
 all : client server
 
-client : client.c ConexaoRawSocket.o ConexaoRawSocket.h rede.h
-server : server.c ConexaoRawSocket.o ConexaoRawSocket.h rede.h
+client : client.c rede.o ConexaoRawSocket.o ConexaoRawSocket.h rede.h
+server : server.c rede.o ConexaoRawSocket.o ConexaoRawSocket.h rede.h
 ConexaoRawSocket.o : ConexaoRawSocket.c ConexaoRawSocket.h
+rede.o : rede.h
 
 .PHONY : clean
 clean :
