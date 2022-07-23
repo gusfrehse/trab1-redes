@@ -14,7 +14,7 @@
 #include "rede.h"
 
 int main() {
-  //printf("%d\n", sizeof(cabecalho_mensagem));
+  printf("tam cabecalho: %lu\n", sizeof(cabecalho_mensagem));
   //return 0;
 
 

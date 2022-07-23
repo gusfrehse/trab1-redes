@@ -1,5 +1,7 @@
 
 
+CFLAGS = -g -std=c11
+
 all : client server
 
 client : client.c rede.o ConexaoRawSocket.o ConexaoRawSocket.h rede.h
