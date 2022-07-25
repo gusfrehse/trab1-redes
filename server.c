@@ -20,14 +20,19 @@ int main() {
   int s = ConexaoRawSocket("lo");
   int lidos = 0;
   while ((lidos = read(s, &buf, sizeof(buf)))) {
-    printf("li %d bytes\n", lidos);
+    //printf("li %d bytes\n", lidos);
     msg = (cabecalho_mensagem *) buf;
     if (msg->marcador == 0b01111110) {
-      printf("Recebi byte de identificação!\n");
+      printf("Recebi mensagem valida!\n");
       int tam = msg->tamanho_seq_tipo >> 10;
       int seq = msg->tamanho_seq_tipo >> 6 & ((1 << 5) -1);
-      printf("Tam: %d Seq: %d\n", tam, seq);
-      printf("dados: %s\n", msg->dados);
+      int tipo = msg->tamanho_seq_tipo << 10;
+      tipo = tipo >> 10 & 0b0000000000111111;
+      printf("01111110 | %d %d %d | %s\n", tam, seq, tipo, msg->dados);
+      //printf("Tam: %d Seq: %d Tipo: %d\n", tam, seq, tipo);
+      //printf("dados: %s\n", msg->dados);
+      printf("Tipo de msg: ");
+      verifica_tipo_mensagem(tipo);
     }
 
     //printf("recebi: 0x%x\n", msg.tamanho_seq_tipo);

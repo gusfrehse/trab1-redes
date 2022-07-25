@@ -1,0 +1,8 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/joao/Documentos/5-periodo/redes1/trab1-redes'
+cc -g -std=c11   -c -o rede.o rede.c
+cc -g -std=c11   -c -o ConexaoRawSocket.o ConexaoRawSocket.c
+cc -g -std=c11    client.c rede.o ConexaoRawSocket.o ConexaoRawSocket.h rede.h   -o client
+cc -g -std=c11    server.c rede.o ConexaoRawSocket.o ConexaoRawSocket.h rede.h   -o server
+make: Leaving directory '/home/joao/Documentos/5-periodo/redes1/trab1-redes'
+ 

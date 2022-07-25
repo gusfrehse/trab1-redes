@@ -23,7 +23,17 @@ int main() {
   char* buf = "1234567890123";
 
   iniciaSocket();
-  mandarMensagem(strlen(buf) + 1, 0, 0, buf);
+  mandarMensagem(strlen(buf) + 1, 0, 1, buf);
+  mandarMensagem(strlen(buf) + 1, 0, 3, "0000000000000");
+  mandarMensagem(strlen(buf) + 1, 0, 2, "1111111111111");
+  mandarMensagem(strlen(buf) + 1, 0, 6, "1111111111111");
+  mandarMensagem(strlen(buf) + 1, 0, 7, "9876543210000");
+  mandarMensagem(strlen(buf) + 1, 0, 63, "aaaaaaaaaaaaa");
+  mandarMensagem(strlen(buf) + 1, 0, 8, "facaoterminal");
+  mandarMensagem(strlen(buf) + 1, 0, 9, "getagoraaaaaa");
+  mandarMensagem(strlen(buf) + 1, 0, 46, "             ");
+  mandarMensagem(strlen(buf) + 1, 0, 24, "-------------");
+
   
 
   //close(s);
