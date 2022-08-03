@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 int soq;
@@ -17,7 +18,7 @@ void finalizaSocket(){
 
 void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo, char* dados){
     cabecalho_mensagem *cab = malloc(sizeof(cabecalho_mensagem) + tam_dados);
-    cab->marcador = 0b01111110;
+    cab->marcador = MARCADOR_INICIO;
     cab->tamanho_seq_tipo = (tam_dados << 10) | (seq << 6) | (tipo);
 
     memcpy(cab->dados, dados, tam_dados);
@@ -26,40 +27,67 @@ void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo,
     //printf("Tam: %d\n", escrito);
 }
 void ack(){
-    mandarMensagem(14, 0, 0b000011, "");
+    mandarMensagem(14, 0, TIPO_ACK, "");
 }
 
 void nack(){
-    mandarMensagem(14, 0, 0b000010, "");
+    mandarMensagem(14, 0, TIPO_NACK, "");
+}
+
+void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, unsigned int *tipo, char** dados) {
+  // tamanho max da msg = 8 + 6 + 4 + 6 + n + 8 = 32 + n = 32 + 64
+  // como n é representado em 6 bits entao n <= 2^6 = 64
+  // tamanho min da msg -> n == 0 -> 32
+  printf("DEBUG: recebendo msg\n");
+  static char buff[32 + 64];
+  for (;;) {
+    printf("DEBUG: lendo socket\n");
+    int lidos = recv(soq, buff, sizeof(buff), 0);
+    if (lidos < 32) {
+      continue;
+    }
+
+    printf("DEBUG: li mensagem\n");
+    cabecalho_mensagem *msg = (cabecalho_mensagem *) buff;
+    *ini = msg->marcador;
+    *tam = msg->tamanho_seq_tipo >> 10;
+    *seq = msg->tamanho_seq_tipo >> 6 & ((1 << 6) - 1);
+    *tipo = msg->tamanho_seq_tipo & ((1 << 8) - 1);
+    *dados = buff;
+
+    break;
+  }
+
+  printf("DEBUG: mensagem lida\n");
 }
 
 void verifica_tipo_mensagem(unsigned int msg){
     switch(msg){
-    case 0b000110:
+    case TIPO_CD:
         printf("cd\n"); break;
-    case 0b00001:
+    case TIPO_OK:
         printf("Ok\n"); break;
-    case 0b000010:
+    case TIPO_NACK:
         printf("Nack\n"); break;
-    case 0b10001:
+    case TIPO_ERRO:
         printf("Erro\n"); break;
-    case 0b000111:
+    case TIPO_LS:
         printf("ls\n"); break;
-    case 0b111111:
+    case TIPO_LS_MOSTRA_NA_TELA:
         printf("Mostra na tela (ls)\n"); break;
-    case 0b000011:
+    case TIPO_ACK:
         printf("Ack\n"); break;
-    case 0b101110:
+    case TIPO_FIM_TX:
         printf("Fim tx\n"); break;
-    case 0b001000:
+    case TIPO_MKDIR:
         printf("mkdir\n"); break;
-    case 0b001001:
+    case TIPO_GET:
         printf("get\n"); break;
-    case 0b011000:
+    case TIPO_DESCRITOR_ARQUIVO:
         printf("Descritor arquivo\n"); break;
-    case 0b100000:
+    case TIPO_DADOS:
         printf("Dados\n"); break;
-    case 0b001010:
+    case TIPO_PUT:
         printf("put\n"); break;
     default:
         printf("Tipo nao reconhecido\n"); break;

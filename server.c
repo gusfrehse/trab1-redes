@@ -16,14 +16,17 @@
 int main() {
   cabecalho_mensagem *msg;
   uint8_t buf[2048];
-  int tam, seq, tipo;
+  unsigned int ini, tam, seq, tipo;
   int s = ConexaoRawSocket("lo");
-  int lidos = 0;
+  unsigned int lidos = 0;
   printf("---------- Servidor ---------\n");
-  while ((lidos = read(s, &buf, sizeof(buf)))) {
+  //while ((lidos = read(s, &buf, sizeof(buf)))) {
+  for (;;) {
     //printf("li %d bytes\n", lidos);
-    msg = (cabecalho_mensagem *) buf;
-    if (msg->marcador == 0b01111110) {
+    //msg = (cabecalho_mensagem *) buf;
+    char *dados;
+    receberMensagem(&ini, &tam, &seq, &tipo, &dados);
+    if (msg->marcador == MARCADOR_INICIO) {
       printf("Recebi mensagem valida!\n");
       tam = msg->tamanho_seq_tipo >> 10;
       seq = msg->tamanho_seq_tipo >> 6 & ((1 << 5) -1);
@@ -35,7 +38,7 @@ int main() {
       printf("Tipo de msg: ");
       verifica_tipo_mensagem(tipo);
     }
-    if(tipo == 0b101110)
+    if(tipo == TIPO_FIM_TX)
       break;
 
     //printf("recebi: 0x%x\n", msg.tamanho_seq_tipo);
