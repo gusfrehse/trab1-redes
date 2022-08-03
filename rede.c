@@ -11,6 +11,10 @@ void iniciaSocket(){
     soq = ConexaoRawSocket("lo");
 }
 
+void finalizaSocket(){
+    close(soq);
+}
+
 void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo, char* dados){
     cabecalho_mensagem *cab = malloc(sizeof(cabecalho_mensagem) + tam_dados);
     cab->marcador = 0b01111110;
@@ -20,6 +24,13 @@ void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo,
 
     int escrito = write(soq, cab, sizeof(cabecalho_mensagem) + tam_dados);
     //printf("Tam: %d\n", escrito);
+}
+void ack(){
+    mandarMensagem(14, 0, 0b000011, "");
+}
+
+void nack(){
+    mandarMensagem(14, 0, 0b000010, "");
 }
 
 void verifica_tipo_mensagem(unsigned int msg){

@@ -40,9 +40,8 @@ int main() {
 
     //printf("recebi: 0x%x\n", msg.tamanho_seq_tipo);
   }
+  
   close(s);
-
-
-  printf("Fim\n");
+  printf("Fim transmissao\n");
 
 }

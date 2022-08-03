@@ -34,6 +34,7 @@ int main() {
   //mandarMensagem(strlen(buf) + 1, 0, 46, "             ");
   //mandarMensagem(strlen(buf) + 1, 0, 24, "-------------");
   char terminal[100];
+  char opcoes[100];
   printf("---------- Terminal Cliente ----------\n");
   printf("$: ");
   scanf("%s", terminal);
@@ -43,16 +44,27 @@ int main() {
     // Faz o reconhecimento do comando digitado pelo usuário
     if(!strcmp(terminal, "ls"))
       mandarMensagem(14, sequencia, 0b000111, "");
-    else if(!strcmp(terminal, "cd"))
-      mandarMensagem(14, sequencia, 0b000110, "");
-
+    else if(!strcmp(terminal, "cd")){
+      scanf("%s", opcoes);
+      mandarMensagem(14 + strlen(opcoes), sequencia, 0b000110, opcoes);
+    }
+    else if(!strcmp(terminal, "get"))
+      mandarMensagem(14, sequencia, 0b001001, "");
+    else if(!strcmp(terminal, "put"))
+      mandarMensagem(14, sequencia, 0b001010, "");
+    else{
+      printf("%s: command not found\n", terminal);
+      sequencia--;
+    }
     sequencia++;
     printf("$: ");
     scanf("%s", terminal);
   }
+  //ack();
+  //nack();
   mandarMensagem(14, sequencia, 0b101110, "");
   
 
-  //close(s);
-  printf("Fim\n");
+  finalizaSocket();
+  printf("Fim transmissao\n");
 }

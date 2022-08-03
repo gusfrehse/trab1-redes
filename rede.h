@@ -20,7 +20,10 @@ typedef struct fim_mensagem {
 
 void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo, char* dados);
 void iniciaSocket();
+void finalizaSocket();
 void verifica_tipo_mensagem(unsigned int msg);
+void ack();
+void nack();
 
 
 
