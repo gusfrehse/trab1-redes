@@ -19,7 +19,7 @@ void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo,
     memcpy(cab->dados, dados, tam_dados);
 
     int escrito = write(soq, cab, sizeof(cabecalho_mensagem) + tam_dados);
-    printf("Tam: %d\n", escrito);
+    //printf("Tam: %d\n", escrito);
 }
 
 void verifica_tipo_mensagem(unsigned int msg){
