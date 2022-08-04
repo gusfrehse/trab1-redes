@@ -20,9 +20,8 @@ int main() {
 
   //int s = ConexaoRawSocket("lo");
   char marcador[14] = {0b01111110};
-  char* buf = "1234567890123";
+  char* buf = "123456789012345678901234";
 
-  iniciaSocket();
   //mandarMensagem(strlen(buf) + 1, 0, 1, buf);
   //mandarMensagem(strlen(buf) + 1, 0, 3, "0000000000000");
   //mandarMensagem(strlen(buf) + 1, 0, 2, "1111111111111");
@@ -33,25 +32,33 @@ int main() {
   //mandarMensagem(strlen(buf) + 1, 0, 9, "getagoraaaaaa");
   //mandarMensagem(strlen(buf) + 1, 0, 46, "             ");
   //mandarMensagem(strlen(buf) + 1, 0, 24, "-------------");
+
+
+
+
+  iniciaSocket();
+
   char terminal[100];
   char opcoes[100];
+
   printf("---------- Terminal Cliente ----------\n");
   printf("$: ");
   scanf("%99s", terminal);
+
   short comando = 0;
   unsigned int sequencia = 0;
   while(strcmp(terminal, "exit")){
     // Faz o reconhecimento do comando digitado pelo usuário
     if(!strcmp(terminal, "ls"))
-      mandarMensagem(14, sequencia, TIPO_LS, "");
+      mandarMensagem(0, sequencia, TIPO_LS, "");
     else if(!strcmp(terminal, "cd")){
       scanf("%99s", opcoes);
-      mandarMensagem(14 + strlen(opcoes), sequencia, TIPO_CD, opcoes);
+      mandarMensagem(strlen(opcoes), sequencia, TIPO_CD, opcoes);
     }
     else if(!strcmp(terminal, "get"))
-      mandarMensagem(14, sequencia, TIPO_GET, "");
+      mandarMensagem(0, sequencia, TIPO_GET, "");
     else if(!strcmp(terminal, "put"))
-      mandarMensagem(14, sequencia, TIPO_PUT, "");
+      mandarMensagem(0, sequencia, TIPO_PUT, "");
     else{
       printf("%s: command not found\n", terminal);
       sequencia--;

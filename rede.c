@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <assert.h>
 
 int soq;
 
@@ -12,19 +13,26 @@ void iniciaSocket(){
     soq = ConexaoRawSocket("lo");
 }
 
+int pegaSocket() {
+    return soq;
+}
+
 void finalizaSocket(){
     close(soq);
 }
 
 void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo, char* dados){
-    cabecalho_mensagem *cab = malloc(sizeof(cabecalho_mensagem) + tam_dados);
+    int tamanho_msg = sizeof(cabecalho_mensagem) + tam_dados;
+    tamanho_msg = tamanho_msg > 16 ? tamanho_msg : 16; // manda pelo menos 16 bytes pra placa de rede ficar feliz
+
+    cabecalho_mensagem *cab = malloc(tamanho_msg);
     cab->marcador = MARCADOR_INICIO;
     cab->tamanho_seq_tipo = (tam_dados << 10) | (seq << 6) | (tipo);
 
     memcpy(cab->dados, dados, tam_dados);
 
-    int escrito = write(soq, cab, sizeof(cabecalho_mensagem) + tam_dados);
-    //printf("Tam: %d\n", escrito);
+    int escrito = write(soq, cab, tamanho_msg);
+    printf("Tam: %d\n", escrito);
 }
 void ack(){
     mandarMensagem(14, 0, TIPO_ACK, "");
@@ -35,30 +43,27 @@ void nack(){
 }
 
 void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, unsigned int *tipo, char** dados) {
-  // tamanho max da msg = 8 + 6 + 4 + 6 + n + 8 = 32 + n = 32 + 64
-  // como n é representado em 6 bits entao n <= 2^6 = 64
-  // tamanho min da msg -> n == 0 -> 32
-  printf("DEBUG: recebendo msg\n");
-  static char buff[32 + 64];
-  for (;;) {
-    printf("DEBUG: lendo socket\n");
+    // tamanho max da msg = 8 + 6 + 4 + 6 + 8 * n + 8  = 32 + 8 * n bits = 4 + n bytes
+    // como n é representado em 6 bits entao n <= 2^6 = 64 e max == 4 + 64 bytes = 68 bytes
+    // tamanho min da msg -> n == 0 -> 32 bits = 4 bytes
+    static char buff[68];
+    //static char buff[2048];
     int lidos = recv(soq, buff, sizeof(buff), 0);
-    if (lidos < 32) {
-      continue;
+
+    if (lidos < 0) {
+        perror("receberMensagem(): recv()");
+        return;
     }
 
-    printf("DEBUG: li mensagem\n");
+    assert(lidos >= 4); // leu pelo menos o cabeçalho;
+
     cabecalho_mensagem *msg = (cabecalho_mensagem *) buff;
     *ini = msg->marcador;
     *tam = msg->tamanho_seq_tipo >> 10;
-    *seq = msg->tamanho_seq_tipo >> 6 & ((1 << 6) - 1);
-    *tipo = msg->tamanho_seq_tipo & ((1 << 8) - 1);
+    *seq = msg->tamanho_seq_tipo >> 6 & ((1 << 4) - 1);
+    *tipo = msg->tamanho_seq_tipo & ((1 << 6) - 1);
     *dados = buff;
-
-    break;
-  }
-
-  printf("DEBUG: mensagem lida\n");
+    // TODO: adicionar crc aqui, deve ser algo como *crc = buff[4 + tam];
 }
 
 void verifica_tipo_mensagem(unsigned int msg){
