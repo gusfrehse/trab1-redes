@@ -22,20 +22,6 @@ int main() {
   char marcador[14] = {0b01111110};
   char* buf = "123456789012345678901234";
 
-  //mandarMensagem(strlen(buf) + 1, 0, 1, buf);
-  //mandarMensagem(strlen(buf) + 1, 0, 3, "0000000000000");
-  //mandarMensagem(strlen(buf) + 1, 0, 2, "1111111111111");
-  //mandarMensagem(strlen(buf) + 1, 0, 6, "1111111111111");
-  //mandarMensagem(strlen(buf) + 1, 0, 7, "9876543210000");
-  //mandarMensagem(strlen(buf) + 1, 0, 63, "aaaaaaaaaaaaa");
-  //mandarMensagem(strlen(buf) + 1, 0, 8, "facaoterminal");
-  //mandarMensagem(strlen(buf) + 1, 0, 9, "getagoraaaaaa");
-  //mandarMensagem(strlen(buf) + 1, 0, 46, "             ");
-  //mandarMensagem(strlen(buf) + 1, 0, 24, "-------------");
-
-
-
-
   iniciaSocket();
 
   char terminal[100];
@@ -44,9 +30,10 @@ int main() {
   printf("---------- Terminal Cliente ----------\n");
   printf("$: ");
   scanf("%99s", terminal);
-
+  unsigned int ini, tam, seq, tipo;
   short comando = 0;
   unsigned int sequencia = 0;
+  char *dados;
   while(strcmp(terminal, "exit")){
     // Faz o reconhecimento do comando digitado pelo usuário
     if(!strcmp(terminal, "ls"))
@@ -63,6 +50,10 @@ int main() {
       printf("%s: command not found\n", terminal);
       sequencia--;
     }
+    receberMensagem(&ini, &tam, &seq, &tipo, &dados);
+    if(ini == MARCADOR_INICIO && tipo == TIPO_NACK)
+      printf("ack\n");
+      
     sequencia++;
     printf("$: ");
     scanf("%99s", terminal);
@@ -70,8 +61,6 @@ int main() {
   //ack();
   //nack();
   mandarMensagem(14, sequencia, TIPO_FIM_TX, "");
-  
-
   finalizaSocket();
   printf("Fim transmissao\n");
 }

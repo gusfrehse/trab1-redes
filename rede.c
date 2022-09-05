@@ -32,7 +32,7 @@ void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo,
     memcpy(cab->dados, dados, tam_dados);
 
     int escrito = write(soq, cab, tamanho_msg);
-    printf("Tam: %d\n", escrito);
+    //printf("Tam: %d\n", escrito);
 }
 void ack(){
     mandarMensagem(14, 0, TIPO_ACK, "");
