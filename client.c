@@ -22,7 +22,8 @@ int main() {
   char marcador[14] = {0b01111110};
   char* buf = "123456789012345678901234";
 
-  iniciaSocket();
+  iniciaSocketClient();
+  iniciaSocketServer();
 
   char terminal[100];
   char opcoes[100];
@@ -37,22 +38,27 @@ int main() {
   while(strcmp(terminal, "exit")){
     // Faz o reconhecimento do comando digitado pelo usuário
     if(!strcmp(terminal, "ls"))
-      mandarMensagem(0, sequencia, TIPO_LS, "");
+      mandarMensagem(0, sequencia, TIPO_LS, "", 1);
     else if(!strcmp(terminal, "cd")){
       scanf("%99s", opcoes);
-      mandarMensagem(strlen(opcoes), sequencia, TIPO_CD, opcoes);
+      mandarMensagem(strlen(opcoes), sequencia, TIPO_CD, opcoes, 1);
     }
     else if(!strcmp(terminal, "get"))
-      mandarMensagem(0, sequencia, TIPO_GET, "");
+      mandarMensagem(0, sequencia, TIPO_GET, "", 1);
     else if(!strcmp(terminal, "put"))
-      mandarMensagem(0, sequencia, TIPO_PUT, "");
+      mandarMensagem(0, sequencia, TIPO_PUT, "", 1);
     else{
       printf("%s: command not found\n", terminal);
       sequencia--;
     }
-    receberMensagem(&ini, &tam, &seq, &tipo, &dados);
-    if(ini == MARCADOR_INICIO && tipo == TIPO_NACK)
-      printf("ack\n");
+    /*printf("recebe agr\n");
+    receberMensagem(&ini, &tam, &seq, &tipo, &dados, 0);
+    if(ini == MARCADOR_INICIO){
+      printf("Recebi mensagem valida!\n");
+      printf("01111110 | %d %d %d | %s\n", tam, seq, tipo, (char*)dados);
+      printf("Tipo de msg: ");
+      verifica_tipo_mensagem(tipo);
+    }*/
       
     sequencia++;
     printf("$: ");
@@ -60,7 +66,8 @@ int main() {
   }
   //ack();
   //nack();
-  mandarMensagem(14, sequencia, TIPO_FIM_TX, "");
-  finalizaSocket();
+  mandarMensagem(14, sequencia, TIPO_FIM_TX, "", 1);
+  finalizaSocketClient();
+  finalizaSocketServer();
   printf("Fim transmissao\n");
 }

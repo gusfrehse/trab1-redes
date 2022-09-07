@@ -34,11 +34,13 @@ typedef struct fim_mensagem {
   uint8_t paridade;
 } fim_mensagem;
 
-void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo, char* dados);
-void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, unsigned int *tipo, char** dados);
-void iniciaSocket();
+void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo, char* dados, int soq);
+void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, unsigned int *tipo, char** dados, int soq);
+void iniciaSocketClient();
+void iniciaSocketServer();
 int pegaSocket();
-void finalizaSocket();
+void finalizaSocketClient();
+void finalizaSocketServer();
 void verifica_tipo_mensagem(unsigned int msg);
 void ack();
 void nack();
