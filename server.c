@@ -15,9 +15,9 @@
 
 int main() {
   uint8_t buf[2048];
+  unsigned int seq_recebimento = 0;
   unsigned int ini, tam, seq, tipo;
   unsigned int lidos = 0;
-  int acki = 1;
   iniciaSocketServer();
   iniciaSocketClient();
 
@@ -27,12 +27,13 @@ int main() {
     receberMensagem(&ini, &tam, &seq, &tipo, &dados, 1);
     if (ini == MARCADOR_INICIO) {
       printf("Recebi mensagem valida!\n");
-      printf("01111110 | %d %d %d | %s\n", tam, seq, tipo, (char*)dados);
-      printf("Tipo de msg: ");
+      printf("01111110 | Tam: %d Seq: %d Tipo: ", tam, seq);
       verifica_tipo_mensagem(tipo);
-      //ack();
+      printf("Dados: %s\n", dados);
+      //if(seq == seq_recebimento)
+      ack();
       //break;
-      //seq++;
+      seq_recebimento++;
       //continue;
     }
     //else if(ini != MARCADOR_INICIO)

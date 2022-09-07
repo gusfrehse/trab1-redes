@@ -37,20 +37,34 @@ void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo,
     cab->marcador = MARCADOR_INICIO;
     cab->tamanho_seq_tipo = (tam_dados << 10) | (seq << 6) | (tipo);
 
+    // Monta paridade
+    fim_mensagem *fim = malloc(8);
+    uint8_t paridade;
+    for(int i = 0;i < tam_dados;i++){
+        paridade ^= dados[i];
+    }
+    fim->paridade = paridade;
+
     memcpy(cab->dados, dados, tam_dados);
     int escrito;
     if(soq == 1)
         escrito = write(soq_server, cab, tamanho_msg);
     else
         escrito = write(soq_client, cab, tamanho_msg);
+    
     //printf("Tam: %d\n", escrito);
 }
 void ack(){
-    mandarMensagem(14, 0, TIPO_ACK, "", 0);
+    //cabecalho_mensagem *cab = malloc(14);
+    //cab->marcador = MARCADOR_INICIO;
+    //cab->tamanho_seq_tipo = (14 << 10) | (0 << 6) | (TIPO_ACK);
+    //write(soq_client, cab, sizeof(cab) + 16);
+    //send(soq_client, cab, sizeof(cab) + 16, 0);
+    mandarMensagem(0, 0, TIPO_ACK, "", 0);
 }
 
 void nack(){
-    mandarMensagem(14, 0, TIPO_NACK, "", 0);
+    mandarMensagem(0, 0, TIPO_NACK, "", 0);
 }
 
 void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, unsigned int *tipo, char** dados, int soq) {
@@ -84,6 +98,12 @@ void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, un
     *tipo = msg->tamanho_seq_tipo & ((1 << 6) - 1);
     *dados = buff;
     // TODO: adicionar crc aqui, deve ser algo como *crc = buff[4 + tam];
+    /*fim_mensagem *fim = malloc(8);
+    uint8_t paridade;
+    for(int i = 0;i < *tam;i++){
+        paridade ^= *dados[i];
+    }*/
+    
 }
 
 void verifica_tipo_mensagem(unsigned int msg){

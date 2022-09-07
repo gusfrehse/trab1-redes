@@ -37,12 +37,16 @@ int main() {
   char *dados;
   while(strcmp(terminal, "exit")){
     // Faz o reconhecimento do comando digitado pelo usuário
-    if(!strcmp(terminal, "ls"))
-      mandarMensagem(0, sequencia, TIPO_LS, "", 1);
-    else if(!strcmp(terminal, "cd")){
+    if(!strcmp(terminal, "cd")){
       scanf("%99s", opcoes);
       mandarMensagem(strlen(opcoes), sequencia, TIPO_CD, opcoes, 1);
     }
+    else if(!strcmp(terminal, "mkdir")){
+      scanf("%99s", opcoes);
+      mandarMensagem(strlen(opcoes), sequencia, TIPO_MKDIR, opcoes, 1);
+    }
+    else if(!strcmp(terminal, "ls"))
+      mandarMensagem(0, sequencia, TIPO_LS, "", 1);
     else if(!strcmp(terminal, "get"))
       mandarMensagem(0, sequencia, TIPO_GET, "", 1);
     else if(!strcmp(terminal, "put"))
@@ -51,14 +55,12 @@ int main() {
       printf("%s: command not found\n", terminal);
       sequencia--;
     }
-    /*printf("recebe agr\n");
+    //printf("recebe agr\n");
     receberMensagem(&ini, &tam, &seq, &tipo, &dados, 0);
-    if(ini == MARCADOR_INICIO){
-      printf("Recebi mensagem valida!\n");
-      printf("01111110 | %d %d %d | %s\n", tam, seq, tipo, (char*)dados);
-      printf("Tipo de msg: ");
-      verifica_tipo_mensagem(tipo);
-    }*/
+    if(ini == MARCADOR_INICIO && tipo == TIPO_ACK)
+      printf("Recebi Ack!\n");
+    else if(ini == MARCADOR_INICIO && tipo == TIPO_NACK)
+      printf("Recebi Nack!\n");
       
     sequencia++;
     printf("$: ");
