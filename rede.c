@@ -7,21 +7,29 @@
 #include <unistd.h>
 #include <assert.h>
 
-int soq;
+int soq_client, soq_server;
 
-void iniciaSocket(){
-    soq = ConexaoRawSocket("lo");
+void iniciaSocketClient(){
+    soq_client = ConexaoRawSocket("lo");
+}
+
+void iniciaSocketServer(){
+    soq_server = ConexaoRawSocket("lo");
 }
 
 int pegaSocket() {
-    return soq;
+    return soq_client;
 }
 
-void finalizaSocket(){
-    close(soq);
+void finalizaSocketClient(){
+    close(soq_client);
 }
 
-void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo, char* dados){
+void finalizaSocketServer(){
+    close(soq_server);
+}
+
+void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo, char* dados, int soq){
     int tamanho_msg = sizeof(cabecalho_mensagem) + tam_dados;
     tamanho_msg = tamanho_msg > 16 ? tamanho_msg : 16; // manda pelo menos 16 bytes pra placa de rede ficar feliz
 
@@ -30,25 +38,37 @@ void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo,
     cab->tamanho_seq_tipo = (tam_dados << 10) | (seq << 6) | (tipo);
 
     memcpy(cab->dados, dados, tam_dados);
-
-    int escrito = write(soq, cab, tamanho_msg);
+    int escrito;
+    if(soq == 1)
+        escrito = write(soq_server, cab, tamanho_msg);
+    else
+        escrito = write(soq_client, cab, tamanho_msg);
     //printf("Tam: %d\n", escrito);
 }
 void ack(){
-    mandarMensagem(14, 0, TIPO_ACK, "");
+    mandarMensagem(14, 0, TIPO_ACK, "", 0);
 }
 
 void nack(){
-    mandarMensagem(14, 0, TIPO_NACK, "");
+    mandarMensagem(14, 0, TIPO_NACK, "", 0);
 }
 
-void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, unsigned int *tipo, char** dados) {
+void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, unsigned int *tipo, char** dados, int soq) {
     // tamanho max da msg = 8 + 6 + 4 + 6 + 8 * n + 8  = 32 + 8 * n bits = 4 + n bytes
     // como n é representado em 6 bits entao n <= 2^6 = 64 e max == 4 + 64 bytes = 68 bytes
     // tamanho min da msg -> n == 0 -> 32 bits = 4 bytes
     static char buff[68];
     //static char buff[2048];
-    int lidos = recv(soq, buff, sizeof(buff), 0);
+    int lidos;
+    if(soq == 1){
+        // Retirar uma leitura caso saia do modo loopback
+        lidos = recv(soq_client, buff, sizeof(buff), 0);
+        lidos = recv(soq_client, buff, sizeof(buff), 0);
+    }
+    else{
+        lidos = recv(soq_server, buff, sizeof(buff), 0);
+        lidos = recv(soq_server, buff, sizeof(buff), 0);
+    }
 
     if (lidos < 0) {
         perror("receberMensagem(): recv()");
