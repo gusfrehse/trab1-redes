@@ -6,12 +6,12 @@ Para entender melhor eles, vamos ver como podemos representar a checagem
 convencional de um bit, como um grafo, e então veremos como extrapolar para
 chegarmos no LDPC.
 
-<transicao Paridade Horizontal Simples>
+<transição Paridade Horizontal Simples>
 
 Em uma paridade horizontal convencional, "contamos" o número de bits 1 e
 incluímos mais um bit na mensagem tal que a quantidade de bits 1 total seja par.
 
-Essa "contagem" pode ser simplificada usando uma operação de ou-exclusivo em
+Essa "contagem" pode ser simplificada usando uma operação de ou exclusivo em
 todos os bits, inclusive no da paridade. Assim, se o resultado da operação for
 zero, a quantidade de bits 1 é par.
 
@@ -24,7 +24,7 @@ Nessa outra sequência, ao fazer o XOR, obtemos 1. Isso quer dizer que quantidad
 de bits 1 é ímpar, e para mudar a paridade da sequência, o bit que iremos
 adicionar precisa ser 1.
 
-<transicao Representacao como Grafo>
+<transição Representação como Grafo>
 
 Podemos representar os passos anteriores como um grafo com certas propriedades.
 
@@ -38,7 +38,7 @@ Os nodos de checagem realizam um XOR entre os nodos nos quais está conectado.
 Nesse caso da paridade horizontal, existe apenas um nodo que está conectado a
 todos os nodos de variáveis.
 
-<transicao um código é válido se ...>
+<transição um código é válido se ...>
 
 Nesse sistema, para que uma mensagem seja válida, os bits correspondentes devem
 ser colocados em seus respectivos nodos e todos os nodos de checagem devem ser
@@ -46,14 +46,50 @@ ser colocados em seus respectivos nodos e todos os nodos de checagem devem ser
 
 Vamos ver um exemplo para ficar mais concreto.
 
-<transicao exemplo>
+<transição exemplo>
 
 Nesse exemplo, queremos descobrir qual deve ser o bit '?' de paridade para uma
 mensagem de 5 bits.
 
-Para isso, fazemos o XOR com cada um dos bits.
+Para isso, fazemos o XOR com cada um dos bits e obtemos uma equação.
 
+Resolvendo, descobrimos que o o bit '?' de paridade é 0.
 
+<transição>
 
+Um problema da paridade horizontal é que se um número par de bits for trocado,
+o algoritmo nos dirá que a mensagem está intacta, mesmo não estando.
 
+Além disso, mesmo numa situação que apenas um bit foi trocado, não temos como
+saber qual foi trocado, impossibilitando qualquer tentativa de recuperar a
+mensagem original.
 
+<transição>
+
+Nos códigos LDPC adicionamos mais nodos de checagem, porém cada um deles é
+conectado a só alguns dos nodos de variáveis.
+
+Assim temos mais segurança que os códigos estão corretos, ao mesmo tempo que,
+caso a mensagem contenha um erro, podemos descobrir quais bits que foram
+trocados.
+
+<transição>
+
+A seguir temos um grafo representando certo código LDPC. Ele possui 3 nodos de
+checagem e 6 nodos de variáveis.
+
+Outra coisa a se notar é que os Nodos de Checagem não são os bits de paridade,
+porém todo Nodo de checagem é conectado a um bit de paridade diferente.
+
+As ligações entre os nodos de variáveis e checagem é arbitrária, e normalmente
+aleatória, porém é importante que sejam usados os mesmos grafos na codificação e
+decodificação.
+
+<transição>
+
+Vamos usar o mesmo exemplo anterior, porém dessa vez com 3 nodos de checagem.
+
+TODO: mudar a image do slide por que ta errada, precisava ter um bit de paridade
+para cada nodo de checagem.
+
+vim: tw=80
