@@ -78,8 +78,13 @@ trocados.
 A seguir temos um grafo representando certo código LDPC. Ele possui 3 nodos de
 checagem e 6 nodos de variáveis.
 
-Outra coisa a se notar é que os Nodos de Checagem não são os bits de paridade,
-porém todo Nodo de checagem é conectado a um bit de paridade diferente.
+Uma coisa a se notar é que os Nodos de Checagem não são os bits de paridade,
+porém todo Nodo de checagem é conectado a pelo menos um bit de paridade
+diferente.
+
+Isso é necessário para não restringir as sequências de mensagens, já que, se um
+Nodo de Checagem não se conectasse em um bit de paridade, o resultado desse nodo
+depende inteiramente nos bits da mensagem.
 
 As ligações entre os nodos de variáveis e checagem é arbitrária, e normalmente
 aleatória, porém é importante que sejam usados os mesmos grafos na codificação e
@@ -87,9 +92,29 @@ decodificação.
 
 <transição>
 
-Vamos usar o mesmo exemplo anterior, porém dessa vez com 3 nodos de checagem.
+Vamos usar o mesmo exemplo anterior, porém dessa vez com 3 nodos de checagem e
+consequentemente 3 bits de paridade, X, Y e Z.
 
-TODO: mudar a image do slide por que ta errada, precisava ter um bit de paridade
-para cada nodo de checagem.
+Nesse caso, cada nodo é conectado a apenas um bit de paridade. Isso não é
+necessário, porém deixa as contas mais fáceis.
+
+<transição>
+
+No final ficamos com um sistema linear, que podemos resolver com o algoritmo de
+Eliminação de Gauss. Graças ao fato de cada nodo de checagem só estar conectado
+a um bit de paridade, temos apenas uma incógnita por equação.
+
+<transição>
+
+Para ficar mais simples, podemos pré computar essas equações em função da
+sequência de bits que queremos codificar, assim deixando a codificação muito
+mais rápida.
+
+<transição>
+
+FIM carajo
+
+
+
 
 vim: tw=80
