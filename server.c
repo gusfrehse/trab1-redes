@@ -30,9 +30,11 @@ int main() {
       printf("01111110 | Tam: %d Seq: %d Tipo: ", tam, seq);
       verifica_tipo_mensagem(tipo);
       printf("Dados:\n");
+
       for (int i = 0; i < tam; i++) {
           printf("%x ", dados[i]);
       }
+
       printf("\n");
 
       //if(seq == seq_recebimento)

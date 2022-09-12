@@ -40,18 +40,16 @@ int main() {
     if(!strcmp(terminal, "cd")){
       scanf("%99s", opcoes);
       mandarMensagem(strlen(opcoes), sequencia, TIPO_CD, opcoes, 1);
-    }
-    else if(!strcmp(terminal, "mkdir")){
+    } else if(!strcmp(terminal, "mkdir")){
       scanf("%99s", opcoes);
       mandarMensagem(strlen(opcoes), sequencia, TIPO_MKDIR, opcoes, 1);
-    }
-    else if(!strcmp(terminal, "ls"))
+    } else if(!strcmp(terminal, "ls"))
       mandarMensagem(0, sequencia, TIPO_LS, "", 1);
     else if(!strcmp(terminal, "get"))
       mandarMensagem(0, sequencia, TIPO_GET, "", 1);
     else if(!strcmp(terminal, "put"))
       mandarMensagem(0, sequencia, TIPO_PUT, "", 1);
-    else{
+    else {
       printf("%s: command not found\n", terminal);
       sequencia--;
     }

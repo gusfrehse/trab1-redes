@@ -11,6 +11,8 @@
 
 int soq_client, soq_server;
 
+uint8_t ultimo_tam_seq_tipo = 0;
+
 void iniciaSocketClient(){
     printf("tamanho struct mensagem: %d\n", sizeof(cabecalho_mensagem));
     soq_client = ConexaoRawSocket("lo");
@@ -34,20 +36,25 @@ void finalizaSocketServer(){
 
 void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo, char* dados, int soq){
     // manda pelo menos 16 bytes pra placa de rede ficar feliz
-    int tamanho_msg = sizeof(cabecalho_mensagem) + tam_dados;
+    int tamanho_msg = sizeof(cabecalho_mensagem) + tam_dados + 1;
     tamanho_msg = (tamanho_msg > TAMANHO_MINIMO_MSG) ? tamanho_msg : TAMANHO_MINIMO_MSG;
 
-    cabecalho_mensagem *cab = malloc(tamanho_msg);
+    uint8_t *buf = malloc(tamanho_msg);
+
+    if (!buf) {
+        printf("ERRO malloc\n");
+        exit(1);
+    }
+
+    cabecalho_mensagem *cab = buf;
     cab->marcador = MARCADOR_INICIO;
     cab->tamanho_seq_tipo = (tam_dados << 10) | (seq << 6) | (tipo);
 
     // Monta paridade
-    fim_mensagem *fim = malloc(sizeof(fim_mensagem));
-    uint8_t paridade;
+    uint8_t *paridade = buf + sizeof(cabecalho_mensagem) + tam_dados;
     for(int i = 0;i < tam_dados;i++){
-        paridade ^= dados[i];
+        *paridade ^= dados[i];
     }
-    fim->paridade = paridade;
 
     memcpy(cab->dados, dados, tam_dados);
     int escrito;
@@ -55,6 +62,8 @@ void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo,
         escrito = write(soq_server, cab, tamanho_msg);
     else
         escrito = write(soq_client, cab, tamanho_msg);
+
+    ultimo_tam_seq_tipo = cab->tam_seq_tipo;
     
     //printf("Tam: %d\n", escrito);
 }
@@ -94,21 +103,28 @@ void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, un
         return;
     }
 
+    uint8_t paridade_msg = buf[sizeof(cabecalho_mensagem) + tam_dados];
+    uint8_t paridade = 0;
+    for(int i = 0;i < tam_dados;i++){
+        *paridade ^= dados[i];
+    }
+
+    if (paridade != paridade_msg) {
+        printf("ERRO paridade receber mensagem, esperava: %x recebido: %x\n", paridade, paridade_msg);
+        // TODO: retornar a paridade em vez de sair direto
+        exit(1);
+    }
+
     assert(lidos >= 4); // leu pelo menos o cabeçalho;
 
     cabecalho_mensagem *msg = (cabecalho_mensagem *) buff;
+
+
     *ini = msg->marcador;
     *tam = MSG_TAM(*msg);
     *seq = MSG_SEQ(*msg);
     *tipo = MSG_TIPO(*msg);
-    *dados = buff;
-    // TODO: adicionar crc aqui, deve ser algo como *crc = buff[4 + tam];
-    /*fim_mensagem *fim = malloc(8);
-    uint8_t paridade;
-    for(int i = 0;i < *tam;i++){
-        paridade ^= *dados[i];
-    }*/
-    
+    *dados = sizeof(cabecalho_mensagem) + buff;
 }
 
 void verifica_tipo_mensagem(unsigned int msg){
