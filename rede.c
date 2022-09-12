@@ -7,9 +7,12 @@
 #include <unistd.h>
 #include <assert.h>
 
+#define TAMANHO_MINIMO_MSG (16)
+
 int soq_client, soq_server;
 
 void iniciaSocketClient(){
+    printf("tamanho struct mensagem: %d\n", sizeof(cabecalho_mensagem));
     soq_client = ConexaoRawSocket("lo");
 }
 
@@ -30,15 +33,16 @@ void finalizaSocketServer(){
 }
 
 void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo, char* dados, int soq){
+    // manda pelo menos 16 bytes pra placa de rede ficar feliz
     int tamanho_msg = sizeof(cabecalho_mensagem) + tam_dados;
-    tamanho_msg = tamanho_msg > 16 ? tamanho_msg : 16; // manda pelo menos 16 bytes pra placa de rede ficar feliz
+    tamanho_msg = (tamanho_msg > TAMANHO_MINIMO_MSG) ? tamanho_msg : TAMANHO_MINIMO_MSG;
 
     cabecalho_mensagem *cab = malloc(tamanho_msg);
     cab->marcador = MARCADOR_INICIO;
     cab->tamanho_seq_tipo = (tam_dados << 10) | (seq << 6) | (tipo);
 
     // Monta paridade
-    fim_mensagem *fim = malloc(8);
+    fim_mensagem *fim = malloc(sizeof(fim_mensagem));
     uint8_t paridade;
     for(int i = 0;i < tam_dados;i++){
         paridade ^= dados[i];
@@ -54,6 +58,7 @@ void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo,
     
     //printf("Tam: %d\n", escrito);
 }
+
 void ack(){
     //cabecalho_mensagem *cab = malloc(14);
     //cab->marcador = MARCADOR_INICIO;
@@ -93,9 +98,9 @@ void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, un
 
     cabecalho_mensagem *msg = (cabecalho_mensagem *) buff;
     *ini = msg->marcador;
-    *tam = msg->tamanho_seq_tipo >> 10;
-    *seq = msg->tamanho_seq_tipo >> 6 & ((1 << 4) - 1);
-    *tipo = msg->tamanho_seq_tipo & ((1 << 6) - 1);
+    *tam = MSG_TAM(*msg);
+    *seq = MSG_SEQ(*msg);
+    *tipo = MSG_TIPO(*msg);
     *dados = buff;
     // TODO: adicionar crc aqui, deve ser algo como *crc = buff[4 + tam];
     /*fim_mensagem *fim = malloc(8);

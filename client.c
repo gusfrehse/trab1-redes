@@ -61,6 +61,9 @@ int main() {
       printf("Recebi Ack!\n");
     else if(ini == MARCADOR_INICIO && tipo == TIPO_NACK)
       printf("Recebi Nack!\n");
+    else {
+      printf("Recebi Outra Coisa!\n");
+    }
       
     sequencia++;
     printf("$: ");
@@ -68,7 +71,7 @@ int main() {
   }
   //ack();
   //nack();
-  mandarMensagem(14, sequencia, TIPO_FIM_TX, "", 1);
+  mandarMensagem(0, sequencia, TIPO_FIM_TX, "", 1);
   finalizaSocketClient();
   finalizaSocketServer();
   printf("Fim transmissao\n");

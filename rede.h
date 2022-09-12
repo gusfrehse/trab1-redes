@@ -19,13 +19,12 @@
 #define TIPO_DADOS             (0b00100000)
 #define TIPO_PUT               (0b00001010)
 
-struct dados {
-  uint8_t tipo;
-  uint8_t dados[];
-};
+#define MSG_TAM(x) (((x).tamanho_seq_tipo >> 10) & 0b111111)
+#define MSG_SEQ(x) (((x).tamanho_seq_tipo >> 6)  & 0b1111)
+#define MSG_TIPO(x) ((x).tamanho_seq_tipo        & 0b111111)
 
 typedef struct cabecalho_mensagem {
-  unsigned char marcador;
+  uint8_t marcador;
   uint16_t  tamanho_seq_tipo; // talvez seja 8 bits
   uint8_t dados[];
 } cabecalho_mensagem;
@@ -44,7 +43,5 @@ void finalizaSocketServer();
 void verifica_tipo_mensagem(unsigned int msg);
 void ack();
 void nack();
-
-
 
 #endif
