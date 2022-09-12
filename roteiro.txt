@@ -1,4 +1,3 @@
-
 Os códigos LDPC, Low Density Parity Codes, são códigos usados para a checagem e
 correção de erros.
 
@@ -57,7 +56,7 @@ Resolvendo, descobrimos que o o bit '?' de paridade é 0.
 
 <transição>
 
-Um problema da paridade horizontal é que se um número par de bits for trocado,
+Um problema da paridade horizontal é que, se um número par de bits for trocado,
 o algoritmo nos dirá que a mensagem está intacta, mesmo não estando.
 
 Além disso, mesmo numa situação que apenas um bit foi trocado, não temos como
@@ -69,7 +68,7 @@ mensagem original.
 Nos códigos LDPC adicionamos mais nodos de checagem, porém cada um deles é
 conectado a só alguns dos nodos de variáveis.
 
-Assim temos mais segurança que os códigos estão corretos, ao mesmo tempo que,
+Assim temos mais segurança que os códigos estão corretos, ao mesmo tempo que
 caso a mensagem contenha um erro, podemos descobrir quais bits que foram
 trocados.
 
@@ -113,8 +112,5 @@ mais rápida.
 <transição>
 
 FIM carajo
-
-
-
 
 vim: tw=80
