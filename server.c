@@ -29,21 +29,15 @@ int main() {
       printf("Recebi mensagem valida!\n");
       printf("01111110 | Tam: %d Seq: %d Tipo: ", tam, seq);
       verifica_tipo_mensagem(tipo);
-      printf("Dados:\n");
-
-      for (int i = 0; i < tam; i++) {
-          printf("%x ", dados[i]);
-      }
-
-      printf("\n");
-
+      printf("Dados: ");
+      printf("%s\n", dados);
       //if(seq == seq_recebimento)
       ack();
       //break;
       seq_recebimento++;
       //continue;
     } else {
-        printf("Recebi mensagem não válida\n");
+        //printf("Recebi mensagem não válida\n");
     }
     //else if(ini != MARCADOR_INICIO)
       //nack();

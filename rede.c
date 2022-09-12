@@ -14,7 +14,7 @@ int soq_client, soq_server;
 uint8_t ultimo_tam_seq_tipo = 0;
 
 void iniciaSocketClient(){
-    printf("tamanho struct mensagem: %d\n", sizeof(cabecalho_mensagem));
+    printf("tamanho struct mensagem: %ld\n", sizeof(cabecalho_mensagem));
     soq_client = ConexaoRawSocket("lo");
 }
 
@@ -46,12 +46,13 @@ void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo,
         exit(1);
     }
 
-    cabecalho_mensagem *cab = buf;
+    cabecalho_mensagem *cab = (cabecalho_mensagem *) buf;
     cab->marcador = MARCADOR_INICIO;
     cab->tamanho_seq_tipo = (tam_dados << 10) | (seq << 6) | (tipo);
 
     // Monta paridade
     uint8_t *paridade = buf + sizeof(cabecalho_mensagem) + tam_dados;
+    *paridade = 0;
     for(int i = 0;i < tam_dados;i++){
         *paridade ^= dados[i];
     }
@@ -63,7 +64,7 @@ void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo,
     else
         escrito = write(soq_client, cab, tamanho_msg);
 
-    ultimo_tam_seq_tipo = cab->tam_seq_tipo;
+    ultimo_tam_seq_tipo = cab->tamanho_seq_tipo;
     
     //printf("Tam: %d\n", escrito);
 }
@@ -103,18 +104,6 @@ void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, un
         return;
     }
 
-    uint8_t paridade_msg = buf[sizeof(cabecalho_mensagem) + tam_dados];
-    uint8_t paridade = 0;
-    for(int i = 0;i < tam_dados;i++){
-        *paridade ^= dados[i];
-    }
-
-    if (paridade != paridade_msg) {
-        printf("ERRO paridade receber mensagem, esperava: %x recebido: %x\n", paridade, paridade_msg);
-        // TODO: retornar a paridade em vez de sair direto
-        exit(1);
-    }
-
     assert(lidos >= 4); // leu pelo menos o cabeçalho;
 
     cabecalho_mensagem *msg = (cabecalho_mensagem *) buff;
@@ -124,7 +113,19 @@ void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, un
     *tam = MSG_TAM(*msg);
     *seq = MSG_SEQ(*msg);
     *tipo = MSG_TIPO(*msg);
-    *dados = sizeof(cabecalho_mensagem) + buff;
+    *dados = malloc(*tam);
+    memcpy(*dados, sizeof(cabecalho_mensagem) + buff, *tam);
+    uint8_t paridade_msg = buff[sizeof(cabecalho_mensagem) + *tam];
+    char paridade = 0;
+    for(int i = 0;i < *tam;i++){
+        paridade ^= (*dados)[i];
+    }
+
+    if (paridade != paridade_msg) {
+        printf("ERRO paridade receber mensagem, esperava: %x recebido: %x\n", paridade, paridade_msg);
+        // TODO: retornar a paridade em vez de sair direto
+        exit(1);
+    }
 }
 
 void verifica_tipo_mensagem(unsigned int msg){
