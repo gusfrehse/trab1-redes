@@ -77,7 +77,7 @@ int main() {
                 printf("\n");
             }
         } else {
-            printf("Recebi algo em que o marcador de início não bate\n");
+            //printf("Recebi algo em que o marcador de início não bate\n");
         }
 
         free(recebe.dados);

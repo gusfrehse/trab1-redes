@@ -23,6 +23,9 @@ int main() {
             printf("Recebi mensagem ok:\n");
             imprimirMensagem(recebe);
 
+            uint8_t paridade = calcularParidade(recebe.tamanho, recebe.dados);
+            if(paridade != recebe.paridade)
+              printf("Paridade com erro!\n");
             if (recebe.tipo == TIPO_FIM_TX)
                 break;
 
@@ -34,8 +37,8 @@ int main() {
 
         } else {
 
-            printf("Recebi algo em que o marcador de início não bate:\n");
-            imprimirMensagem(recebe);
+            //printf("Recebi algo em que o marcador de início não bate:\n");
+            //imprimirMensagem(recebe);
 
         }
 
