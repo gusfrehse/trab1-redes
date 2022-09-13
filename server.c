@@ -1,10 +1,3 @@
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <net/ethernet.h>
-#include <linux/if_packet.h>
-#include <linux/if.h>
-#include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -14,41 +7,42 @@
 #include "rede.h"
 
 int main() {
-  uint8_t buf[2048];
-  unsigned int seq_recebimento = 0;
-  unsigned int ini, tam, seq, tipo;
-  unsigned int lidos = 0;
-  iniciaSocketServer();
-  iniciaSocketClient();
+    msg_info recebe, envio;
+    envio.inicio = MARCADOR_INICIO;
 
-  printf("---------- Servidor ---------\n");
-  for (;;) {
-    char *dados;
-    receberMensagem(&ini, &tam, &seq, &tipo, &dados, 1);
-    if (ini == MARCADOR_INICIO) {
-      printf("Recebi mensagem valida!\n");
-      printf("01111110 | Tam: %d Seq: %d Tipo: ", tam, seq);
-      verifica_tipo_mensagem(tipo);
-      printf("Dados: ");
-      printf("%s\n", dados);
-      //if(seq == seq_recebimento)
-      ack();
-      //break;
-      seq_recebimento++;
-      //continue;
-    } else {
-        //printf("Recebi mensagem não válida\n");
+    iniciaSocket();
+
+    printf("---------- Servidor ---------\n");
+
+    for (;;) {
+
+        recebe = receberMensagem();
+
+        if (recebe.inicio == MARCADOR_INICIO) {
+
+            printf("Recebi mensagem ok:\n");
+            imprimirMensagem(recebe);
+
+            if (recebe.tipo == TIPO_FIM_TX)
+                break;
+
+            if (recebe.tipo != TIPO_ACK) {
+                envio.tamanho = 0;
+                envio.tipo = TIPO_ACK;
+                mandarMensagem(envio);
+            }
+
+        } else {
+
+            printf("Recebi algo em que o marcador de início não bate:\n");
+            imprimirMensagem(recebe);
+
+        }
+
     }
-    //else if(ini != MARCADOR_INICIO)
-      //nack();
-    if(tipo == TIPO_FIM_TX)
-      break;
 
-    //printf("recebi: 0x%x\n", msg.tamanho_seq_tipo);
-  }
-  
-  finalizaSocketServer();
-  finalizaSocketClient();
-  printf("Fim transmissao\n");
-
+    finalizaSocket();
+    printf("Fim transmissao\n");
 }
+
+// vim: set ts=4 sts=4 sw=4 et:

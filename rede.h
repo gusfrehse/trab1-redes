@@ -19,29 +19,25 @@
 #define TIPO_DADOS             (0b00100000)
 #define TIPO_PUT               (0b00001010)
 
-#define MSG_TAM(x) (((x).tamanho_seq_tipo >> 10) & 0b111111)
-#define MSG_SEQ(x) (((x).tamanho_seq_tipo >> 6)  & 0b1111)
-#define MSG_TIPO(x) ((x).tamanho_seq_tipo        & 0b111111)
+typedef struct msg_info {
+    uint8_t inicio;
+    uint8_t tamanho;
+    uint8_t sequencia;
+    uint8_t tipo;
+    uint8_t *dados;
+    uint8_t paridade;
+} msg_info;
 
-typedef struct cabecalho_mensagem {
-  uint8_t marcador;
-  uint16_t  tamanho_seq_tipo; // talvez seja 8 bits
-  uint8_t dados[];
-} cabecalho_mensagem;
-
-typedef struct fim_mensagem {
-  uint8_t paridade;
-} fim_mensagem;
-
-void mandarMensagem(unsigned int tam_dados, unsigned int seq, unsigned int tipo, char* dados, int soq);
-void receberMensagem(unsigned int *ini, unsigned int *tam, unsigned int *seq, unsigned int *tipo, char** dados, int soq);
-void iniciaSocketClient();
-void iniciaSocketServer();
+void iniciaSocket();
+void finalizaSocket();
 int pegaSocket();
-void finalizaSocketClient();
-void finalizaSocketServer();
-void verifica_tipo_mensagem(unsigned int msg);
-void ack();
-void nack();
+
+void mandarMensagem(msg_info info);
+msg_info receberMensagem();
+
+void verificaTipoMensagem(uint8_t tipo);
+uint8_t calcularParidade(int tam, uint8_t* dados);
+
+void imprimirMensagem(msg_info msg);
 
 #endif
