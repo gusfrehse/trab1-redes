@@ -79,6 +79,8 @@ int main() {
         } else {
             printf("Recebi algo em que o marcador de início não bate\n");
         }
+
+        free(recebe.dados);
             
         printf("$: ");
         scanf("%99s", terminal);

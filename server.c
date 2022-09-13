@@ -39,6 +39,8 @@ int main() {
 
         }
 
+        free(recebe.dados);
+
     }
 
     finalizaSocket();
