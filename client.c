@@ -6,6 +6,56 @@
 #include "ConexaoRawSocket.h"
 #include "rede.h"
 
+void ls(char *opcoes) {
+    msg_info info;
+    info.inicio = MARCADOR_INICIO;
+    info.tamanho = strlen(opcoes) + 1;
+    info.sequencia = 0; // TODO
+    info.tipo = TIPO_LS;
+    info.dados = opcoes;
+    info.paridade = calcularParidade(info.tamanho, info.dados);
+
+    mandarMensagem(info);
+
+    while (1) {
+        info = receberMensagem();
+
+        if (info.inicio != MARCADOR_INICIO) {
+            printf("ERRO marcador inicio ls\n");
+            free(info.dados);
+            continue;
+        }
+
+        if (info.paridade != calcularParidade(info.tamanho, info.dados)) {
+            printf("ERRO paridade ls\n");
+
+            msg_info nack;
+            info.inicio = MARCADOR_INICIO;
+            info.tamanho = 0;
+            info.sequencia = 0; // TODO
+            info.tipo = TIPO_NACK;
+            info.paridade = 0;
+
+            mandarMensagem(nack);
+
+            free(info.dados);
+            continue;
+        }
+
+        if (info.tipo == TIPO_FIM_TX) {
+            free(info.dados);
+            break;
+        }
+
+        for (int i = 0; i < info.tamanho; i++) {
+            putchar(info.dados[i]);
+        }
+        
+        free(info.dados);
+    }
+
+}
+
 int main() {
     iniciaSocket();
 
@@ -44,10 +94,11 @@ int main() {
             envio.dados = opcoes;
 
         } else if (!strcmp(terminal, "ls")) {
-
-            envio.tamanho = 0;
-            envio.tipo = TIPO_LS;
-
+            scanf("%99s", opcoes);
+            ls(opcoes);
+            printf("$: ");
+            scanf("%99s", terminal);
+            continue;
         } else if (!strcmp(terminal, "get")) {
 
             envio.tamanho = 0;
@@ -62,27 +113,8 @@ int main() {
             printf("%s: command not found\n", terminal);
         }
 
-        mandarMensagem(envio);
+        //mandarMensagem(envio);
 
-        //recebe = receberMensagem();
-        recebe = receberMensagem(); // ack
-
-        if (recebe.inicio == MARCADOR_INICIO) {
-            if (recebe.tipo == TIPO_ACK) {
-                printf("Recebi Ack!\n");
-            } else if (recebe.tipo == TIPO_NACK) {
-                printf("Recebi Nack!\n");
-            } else {
-                printf("Recebi Outra Coisa: \n");
-                imprimirMensagem(recebe);
-                printf("\n");
-            }
-        } else {
-            //printf("Recebi algo em que o marcador de início não bate\n");
-        }
-
-        free(recebe.dados);
-            
         printf("$: ");
         scanf("%99s", terminal);
     }

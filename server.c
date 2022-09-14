@@ -19,8 +19,9 @@ void executa_cd(msg_info msg){
 
     errno = 0;
     if(chdir(caminho) != 0){
-        memcpy(aux.dados, strerror(errno), 63);
-        aux.dados[63] = '\0';
+        char *err_str = strerror(errno);
+        aux.tamanho = strlen(err_str) + 1;
+        memcpy(aux.dados, err_str, aux.tamanho);
         aux.tipo = TIPO_ERRO;
     } else {
         printf("CD OK! nome do diretorio atual: %s\n", caminho);
