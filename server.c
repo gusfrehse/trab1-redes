@@ -2,9 +2,37 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "ConexaoRawSocket.h"
 #include "rede.h"
+
+void executa_cd(msg_info msg){
+    msg_info aux = {};
+    aux.inicio = MARCADOR_INICIO;
+    aux.tipo = TIPO_DADOS;
+
+    char caminho[100] = {};
+    memcpy(caminho, msg.dados, sizeof(msg.dados));
+
+    errno = 0;
+    if(chdir(caminho) != 0){
+        if(errno == EACCES)
+            printf("CD - Erro! Permissão negada\n");
+        if(errno == ENOENT)
+            printf("CD - Erro! Diretório não encontrado\n");
+        return;
+    }
+    printf("CD OK! nome do diretorio atual: %s\n", caminho);
+
+    // Mudar valores obviamente
+    aux.tamanho = 50;
+    aux.dados = malloc(50);
+    aux.dados = caminho;
+    printf("\tMSG A SER ENVIADA(CD)\n");
+    imprimirMensagem(aux);
+    mandarMensagem(aux);
+}
 
 int main() {
     msg_info recebe, envio;
@@ -17,15 +45,20 @@ int main() {
     for (;;) {
 
         recebe = receberMensagem();
+        recebe = receberMensagem();
 
         if (recebe.inicio == MARCADOR_INICIO) {
 
             printf("Recebi mensagem ok:\n");
             imprimirMensagem(recebe);
 
+            if(recebe.tipo == TIPO_CD)
+                executa_cd(recebe);
+
             uint8_t paridade = calcularParidade(recebe.tamanho, recebe.dados);
             if(paridade != recebe.paridade)
               printf("Paridade com erro!\n");
+
             if (recebe.tipo == TIPO_FIM_TX)
                 break;
 

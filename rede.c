@@ -20,7 +20,8 @@ int soq;
 uint8_t ultimo_tam_seq_tipo = 0;
 
 void iniciaSocket(){
-    soq = ConexaoRawSocket("enp1s0f0");
+    //enp1s0f0
+    soq = ConexaoRawSocket("lo");
 }
 
 int pegaSocket() {
@@ -150,7 +151,7 @@ void imprimirMensagem(msg_info msg) {
     printf("\tdados:   %d  ", msg.tamanho);
 
     for (int i = 0; i < msg.tamanho; i++) {
-        printf("%x ", msg.dados[i]);
+        printf("%c ", msg.dados[i]);
     }
 
     printf("\n");
