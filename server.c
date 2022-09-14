@@ -13,7 +13,7 @@ void executa_cd(msg_info msg){
     aux.tipo = TIPO_DADOS;
 
     char caminho[100] = {};
-    memcpy(caminho, msg.dados, sizeof(msg.dados));
+    memcpy(caminho, msg.dados, msg.tamanho);
 
     errno = 0;
     if(chdir(caminho) != 0){
@@ -45,7 +45,7 @@ int main() {
     for (;;) {
 
         recebe = receberMensagem();
-        recebe = receberMensagem();
+        //recebe = receberMensagem();
 
         if (recebe.inicio == MARCADOR_INICIO) {
 

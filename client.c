@@ -64,7 +64,7 @@ int main() {
 
         mandarMensagem(envio);
 
-        recebe = receberMensagem();
+        //recebe = receberMensagem();
         recebe = receberMensagem(); // ack
 
         if (recebe.inicio == MARCADOR_INICIO) {
