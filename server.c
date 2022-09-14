@@ -1,3 +1,4 @@
+//#define _XOPEN_SOURCE 500
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -31,6 +32,47 @@ void executa_cd(msg_info msg){
     mandarMensagem(aux);
 }
 
+void executa_ls(msg_info msg){
+    msg_info aux = {};
+    aux.inicio = MARCADOR_INICIO;
+    aux.tamanho = 63;
+    aux.dados = malloc(63);
+    if(aux.dados == NULL){
+        printf("Erro no malloc\n");
+        exit(1);
+    }
+    char comando[63] = "ls ";
+    strcat(comando, msg.dados);
+    printf("Comando: %s\n", comando);
+
+    FILE *arq = popen(comando, "r");
+    if(arq == NULL){
+        printf("Erro POPEN\n");
+        exit(1);
+    }
+
+    int lidos;
+    while((lidos = fread(aux.dados, 1, 63, arq)) != 0){
+        //int lidos = fgets(aux.dados, 63, arq);
+        aux.tamanho = lidos;
+        aux.inicio = MARCADOR_INICIO;
+        aux.tipo = TIPO_DADOS;
+        aux.paridade = calcularParidade(aux.tamanho, aux.dados);
+        //TODO sequencia
+        printf("%s", aux.dados);
+        mandarMensagem(aux);
+    }
+    pclose(arq);
+    //free(aux.dados);
+    //aux.dados = NULL;
+    aux.tamanho = 0;
+    aux.inicio = MARCADOR_INICIO;
+    aux.tipo = TIPO_FIM_TX;
+    aux.paridade = 0;
+    //aux.paridade = calcularParidade(aux.tamanho, aux.dados);
+    mandarMensagem(aux);
+}
+
 int main() {
     msg_info recebe, envio;
     envio.inicio = MARCADOR_INICIO;
@@ -55,6 +97,10 @@ int main() {
 
             if(recebe.tipo == TIPO_CD) {
                 executa_cd(recebe);
+                continue;
+            }
+            else if(recebe.tipo == TIPO_LS){
+                executa_ls(recebe);
                 continue;
             }
 

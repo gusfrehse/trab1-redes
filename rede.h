@@ -34,7 +34,7 @@ int pegaSocket();
 
 void mandarMensagem(msg_info info);
 msg_info receberMensagem();
-
+msg_info montaMsg(uint8_t tam, uint8_t seq, uint8_t tipo, uint8_t* dados);
 void verificaTipoMensagem(uint8_t tipo);
 uint8_t calcularParidade(int tam, uint8_t* dados);
 
