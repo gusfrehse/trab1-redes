@@ -32,6 +32,20 @@ void finalizaSocket(){
     close(soq);
 }
 
+msg_info montaMsg(uint8_t tam, uint8_t seq, uint8_t tipo, uint8_t* dados){
+    msg_info msg;
+
+    msg.inicio = MARCADOR_INICIO;
+    msg.dados = malloc(sizeof(dados));
+    memcpy(msg.dados, dados, tam);
+    msg.tamanho = tam;
+    msg.tipo = tipo;
+    msg.sequencia = seq;
+    msg.paridade = calcularParidade(tam, dados);
+
+    return msg;
+}
+
 uint8_t calcularParidade(int tam, uint8_t* dados) {
     uint8_t p = 0;
 

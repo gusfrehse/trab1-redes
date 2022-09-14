@@ -1,6 +1,6 @@
 
 
-CFLAGS = -g -std=c11
+CFLAGS = -g 
 
 all : client server
 
