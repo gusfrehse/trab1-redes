@@ -11,26 +11,23 @@ void executa_cd(msg_info msg){
     msg_info aux = {};
     aux.inicio = MARCADOR_INICIO;
     aux.tipo = TIPO_DADOS;
+    aux.tamanho = 63;
+    aux.dados = malloc(63);
 
     char caminho[100] = {};
     memcpy(caminho, msg.dados, msg.tamanho);
 
     errno = 0;
     if(chdir(caminho) != 0){
-        if(errno == EACCES)
-            printf("CD - Erro! Permissão negada\n");
-        if(errno == ENOENT)
-            printf("CD - Erro! Diretório não encontrado\n");
-        return;
+        memcpy(aux.dados, strerror(errno), 63);
+        aux.dados[63] = '\0';
+        aux.tipo = TIPO_ERRO;
+    } else {
+        printf("CD OK! nome do diretorio atual: %s\n", caminho);
+        memcpy(aux.dados, caminho, msg.tamanho);
     }
-    printf("CD OK! nome do diretorio atual: %s\n", caminho);
 
     // Mudar valores obviamente
-    aux.tamanho = 50;
-    aux.dados = malloc(50);
-    aux.dados = caminho;
-    printf("\tMSG A SER ENVIADA(CD)\n");
-    imprimirMensagem(aux);
     mandarMensagem(aux);
 }
 
@@ -52,12 +49,14 @@ int main() {
             printf("Recebi mensagem ok:\n");
             imprimirMensagem(recebe);
 
-            if(recebe.tipo == TIPO_CD)
-                executa_cd(recebe);
-
             uint8_t paridade = calcularParidade(recebe.tamanho, recebe.dados);
             if(paridade != recebe.paridade)
               printf("Paridade com erro!\n");
+
+            if(recebe.tipo == TIPO_CD) {
+                executa_cd(recebe);
+                continue;
+            }
 
             if (recebe.tipo == TIPO_FIM_TX)
                 break;

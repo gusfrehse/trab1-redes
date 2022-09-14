@@ -1,0 +1,64 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/home/gus/uni/redes/trab1/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	/p5.9.20220828.0/
+CFLAGS	Makefile	/^CFLAGS = -g -std=c11$/;"	m
+CONEXAO_RAW_SOCKET_H	ConexaoRawSocket.h	/^#define CONEXAO_RAW_SOCKET_H$/;"	d
+ConexaoRawSocket	ConexaoRawSocket.c	/^int ConexaoRawSocket(char *device)$/;"	f	typeref:typename:int
+ConexaoRawSocket.o	Makefile	/^ConexaoRawSocket.o : ConexaoRawSocket.c ConexaoRawSocket.h$/;"	t
+MARCADOR_INICIO	rede.h	/^#define MARCADOR_INICIO /;"	d
+MSG_BYTE_1	rede.c	/^#define MSG_BYTE_1(/;"	d	file:
+MSG_BYTE_2	rede.c	/^#define MSG_BYTE_2(/;"	d	file:
+MSG_SEQ	rede.c	/^#define MSG_SEQ(/;"	d	file:
+MSG_TAM	rede.c	/^#define MSG_TAM(/;"	d	file:
+MSG_TIPO	rede.c	/^#define MSG_TIPO(/;"	d	file:
+REDE_H	rede.h	/^#define REDE_H$/;"	d
+TAM_MIN_MSG	rede.c	/^#define TAM_MIN_MSG /;"	d	file:
+TIPO_ACK	rede.h	/^#define TIPO_ACK /;"	d
+TIPO_CD	rede.h	/^#define TIPO_CD /;"	d
+TIPO_DADOS	rede.h	/^#define TIPO_DADOS /;"	d
+TIPO_DESCRITOR_ARQUIVO	rede.h	/^#define TIPO_DESCRITOR_ARQUIVO /;"	d
+TIPO_ERRO	rede.h	/^#define TIPO_ERRO /;"	d
+TIPO_FIM_TX	rede.h	/^#define TIPO_FIM_TX /;"	d
+TIPO_GET	rede.h	/^#define TIPO_GET /;"	d
+TIPO_LS	rede.h	/^#define TIPO_LS /;"	d
+TIPO_LS_MOSTRA_NA_TELA	rede.h	/^#define TIPO_LS_MOSTRA_NA_TELA /;"	d
+TIPO_MKDIR	rede.h	/^#define TIPO_MKDIR /;"	d
+TIPO_NACK	rede.h	/^#define TIPO_NACK /;"	d
+TIPO_OK	rede.h	/^#define TIPO_OK /;"	d
+TIPO_PUT	rede.h	/^#define TIPO_PUT /;"	d
+all	Makefile	/^all : client server$/;"	t
+calcularParidade	rede.c	/^uint8_t calcularParidade(int tam, uint8_t* dados) {$/;"	f	typeref:typename:uint8_t
+clean	Makefile	/^clean :$/;"	t
+client	Makefile	/^client : client.c rede.o ConexaoRawSocket.o ConexaoRawSocket.h rede.h$/;"	t
+dados	rede.h	/^    uint8_t *dados;$/;"	m	struct:msg_info	typeref:typename:uint8_t *
+enviarMensagemParaEEspera	rede.c	/^void enviarMensagemParaEEspera(msg_info info) {$/;"	f	typeref:typename:void
+finalizaSocket	rede.c	/^void finalizaSocket(){$/;"	f	typeref:typename:void
+imprimirMensagem	rede.c	/^void imprimirMensagem(msg_info msg) {$/;"	f	typeref:typename:void
+iniciaSocket	rede.c	/^void iniciaSocket() {$/;"	f	typeref:typename:void
+inicio	rede.h	/^    uint8_t inicio;$/;"	m	struct:msg_info	typeref:typename:uint8_t
+main	client.c	/^int main() {$/;"	f	typeref:typename:int
+main	server.c	/^int main() {$/;"	f	typeref:typename:int
+mandarMensagem	rede.c	/^void mandarMensagem(msg_info info){$/;"	f	typeref:typename:void
+mkdir_remoto	client.c	/^void mkdir_remoto(char *arg) {$/;"	f	typeref:typename:void
+msg_info	rede.h	/^typedef struct msg_info {$/;"	s
+msg_info	rede.h	/^} msg_info;$/;"	t	typeref:struct:msg_info
+paridade	rede.h	/^    uint8_t paridade;$/;"	m	struct:msg_info	typeref:typename:uint8_t
+pegaSocket	rede.c	/^int pegaSocket() {$/;"	f	typeref:typename:int
+pegarMensagemParaEEspera	rede.c	/^msg_info pegarMensagemParaEEspera() {$/;"	f	typeref:typename:msg_info
+receberMensagem	rede.c	/^msg_info receberMensagem() {$/;"	f	typeref:typename:msg_info
+rede.o	Makefile	/^rede.o : rede.h$/;"	t
+sequencia	rede.h	/^    uint8_t sequencia;$/;"	m	struct:msg_info	typeref:typename:uint8_t
+server	Makefile	/^server : server.c rede.o ConexaoRawSocket.o ConexaoRawSocket.h rede.h$/;"	t
+soq	rede.c	/^int soq;$/;"	v	typeref:typename:int
+tamanho	rede.h	/^    uint8_t tamanho;$/;"	m	struct:msg_info	typeref:typename:uint8_t
+tipo	rede.h	/^    uint8_t tipo;$/;"	m	struct:msg_info	typeref:typename:uint8_t
+ultimo_tam_seq_tipo	rede.c	/^uint8_t ultimo_tam_seq_tipo = 0;$/;"	v	typeref:typename:uint8_t
+verificaTipoMensagem	rede.c	/^void verificaTipoMensagem(uint8_t tipo){$/;"	f	typeref:typename:void
