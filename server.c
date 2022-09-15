@@ -8,41 +8,16 @@
 #include "ConexaoRawSocket.h"
 #include "rede.h"
 
-void executa_cd(msg_info msg){
-    msg_info aux = {};
-    aux.inicio = MARCADOR_INICIO;
-    aux.tipo = TIPO_DADOS;
-    aux.tamanho = 63;
-    aux.dados = malloc(63);
-
-    char caminho[100] = {};
-    memcpy(caminho, msg.dados, msg.tamanho);
-
-    errno = 0;
-    if(chdir(caminho) != 0){
-        char *err_str = strerror(errno);
-        aux.tamanho = strlen(err_str) + 1;
-        memcpy(aux.dados, err_str, aux.tamanho);
-        aux.tipo = TIPO_ERRO;
-    } else {
-        printf("CD OK! nome do diretorio atual: %s\n", caminho);
-        memcpy(aux.dados, caminho, msg.tamanho);
-    }
-
-    // Mudar valores obviamente
-    mandarMensagem(aux);
-}
-
 void executa_ls(msg_info msg){
     msg_info aux = {};
     aux.inicio = MARCADOR_INICIO;
-    aux.tamanho = 63;
-    aux.dados = malloc(63);
+    aux.tamanho = TAM_MAX_DADOS;
+    aux.dados = malloc(TAM_MAX_DADOS);
     if(aux.dados == NULL){
         printf("Erro no malloc\n");
         exit(1);
     }
-    char comando[63] = "ls ";
+    char comando[TAM_MAX_DADOS] = "ls ";
     strcat(comando, msg.dados);
     printf("Comando: %s\n", comando);
 
@@ -53,8 +28,8 @@ void executa_ls(msg_info msg){
     }
 
     int lidos;
-    while((lidos = fread(aux.dados, 1, 63, arq)) != 0){
-        //int lidos = fgets(aux.dados, 63, arq);
+    while((lidos = fread(aux.dados, 1, TAM_MAX_DADOS, arq)) != 0){
+        //int lidos = fgets(aux.dados, TAM_MAX_DADOS, arq);
         aux.tamanho = lidos;
         aux.inicio = MARCADOR_INICIO;
         aux.tipo = TIPO_DADOS;
@@ -74,6 +49,35 @@ void executa_ls(msg_info msg){
     mandarMensagem(aux);
 }
 
+void executa_cd(msg_info msg){
+    msg_info aux = {};
+    aux.inicio = MARCADOR_INICIO;
+    aux.tipo = TIPO_DADOS;
+    aux.tamanho = TAM_MAX_DADOS;
+    aux.dados = malloc(TAM_MAX_DADOS);
+
+    char caminho[TAM_MAX_DADOS + 1] = {};
+    memcpy(caminho, msg.dados, msg.tamanho);
+    caminho[TAM_MAX_DADOS] = '\0';
+
+    errno = 0;
+    if (chdir(caminho) != 0) {
+        char *err_str = strerror(errno);
+
+        aux.tamanho = strlen(err_str) + 1;
+        memcpy(aux.dados, err_str, aux.tamanho);
+
+        aux.tipo = TIPO_ERRO;
+    } else {
+        printf("CD OK! nome do diretorio atual: %s\n", caminho);
+
+        aux.tamanho = strlen(caminho) + 1;
+        memcpy(aux.dados, caminho, msg.tamanho);
+    }
+
+    mandarMensagem(aux);
+}
+
 int main() {
     msg_info recebe, envio;
     envio.inicio = MARCADOR_INICIO;
@@ -84,23 +88,28 @@ int main() {
 
     for (;;) {
 
+start:
         recebe = receberMensagem();
-        //recebe = receberMensagem();
 
         if (recebe.inicio == MARCADOR_INICIO) {
 
             printf("Recebi mensagem ok:\n");
             imprimirMensagem(recebe);
 
-            uint8_t paridade = calcularParidade(recebe.tamanho, recebe.dados);
-            if(paridade != recebe.paridade)
-              printf("Paridade com erro!\n");
+            if (calcularParidade(recebe.tamanho, recebe.dados) != recebe.paridade) {
+                free(recebe.dados);
 
-            if(recebe.tipo == TIPO_CD) {
+                mandarMensagem(nack);
+
+                goto start;
+            }
+
+            if (recebe.tipo == TIPO_CD) {
                 executa_cd(recebe);
                 continue;
             }
-            else if(recebe.tipo == TIPO_LS){
+
+            if (recebe.tipo == TIPO_LS){
                 executa_ls(recebe);
                 continue;
             }

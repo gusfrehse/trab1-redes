@@ -2,6 +2,7 @@
 #define REDE_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 #define MARCADOR_INICIO        (0b01111110)
 
@@ -19,6 +20,8 @@
 #define TIPO_DADOS             (0b00100000)
 #define TIPO_PUT               (0b00001010)
 
+#define TAM_MAX_DADOS 63
+
 typedef struct msg_info {
     uint8_t inicio;
     uint8_t tamanho;
@@ -27,6 +30,8 @@ typedef struct msg_info {
     uint8_t *dados;
     uint8_t paridade;
 } msg_info;
+
+extern const msg_info ack, nack;
 
 void iniciaSocket();
 void finalizaSocket();

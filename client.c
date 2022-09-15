@@ -7,6 +7,8 @@
 #include "rede.h"
 
 void ls(char *opcoes) {
+    // TODO: em caso de erro deve printar o erro e sair
+
     msg_info info;
     info.inicio = MARCADOR_INICIO;
     info.tamanho = strlen(opcoes) + 1;
@@ -29,13 +31,6 @@ void ls(char *opcoes) {
         if (info.paridade != calcularParidade(info.tamanho, info.dados)) {
             printf("ERRO paridade ls\n");
 
-            msg_info nack;
-            info.inicio = MARCADOR_INICIO;
-            info.tamanho = 0;
-            info.sequencia = 0; // TODO
-            info.tipo = TIPO_NACK;
-            info.paridade = 0;
-
             mandarMensagem(nack);
 
             free(info.dados);
@@ -56,6 +51,39 @@ void ls(char *opcoes) {
 
 }
 
+void cd(char *diretorio) {
+start:
+    msg_info info;
+    info.inicio = MARCADOR_INICIO;
+    info.tamanho = strlen(diretorio);
+    info.sequencia = 0; // TODO
+    info.tipo = TIPO_CD;
+    info.dados = diretorio;
+    info.paridade = calcularParidade(info.tamanho, info.dados);
+
+    mandarMensagem(info);
+
+    info = receberMensagem();
+
+    if (info.inicio != MARCADOR_INICIO) {
+        free(info.dados);
+        goto start;
+    }
+
+    if (info.tipo == TIPO_OK) {
+        printf("Mudado de diretório\n");
+    } else if (info.tipo == TIPO_ERRO) {
+        for (int i = 0; i < info.tamanho; i++) {
+            putchar(info.dados[i]);
+        }
+
+        putchar('\n'); // talvez nao precise
+    } else if (info.tipo == TIPO_NACK) {
+        goto start;
+    }
+}
+
+
 int main() {
     iniciaSocket();
 
@@ -66,7 +94,6 @@ int main() {
     printf("$: ");
     scanf("%99s", terminal);
     unsigned int ini, tam, seq, tipo;
-    short comando = 0;
     char *dados;
     
 
@@ -80,10 +107,10 @@ int main() {
         if (!strcmp(terminal, "cd")) {
 
             scanf("%99s", opcoes);
-
-            envio.tamanho = strlen(opcoes);
-            envio.tipo = TIPO_CD;
-            envio.dados = opcoes;
+            cd(opcoes);
+            printf("$: ");
+            scanf("%99s", terminal);
+            continue;
 
         } else if (!strcmp(terminal, "mkdir")) {
 

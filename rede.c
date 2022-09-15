@@ -15,6 +15,25 @@
 #define MSG_SEQ(byte1, byte2) ((((byte1) << 2) | ((byte2) >> 6)) & 0b1111)
 #define MSG_TIPO(byte1, byte2) (byte2 & 0b111111)
 
+const msg_info ack = {
+    .inicio = MARCADOR_INICIO,
+    .tamanho = 0,
+    .sequencia = 0,
+    .tipo = TIPO_ACK,
+    .dados = NULL,
+    .paridade = 0,
+};
+
+const msg_info nack = {
+    .inicio = MARCADOR_INICIO,
+    .tamanho = 0,
+    .sequencia = 0,
+    .tipo = TIPO_NACK,
+    .dados = NULL,
+    .paridade = 0,
+};
+
+
 int soq;
 
 uint8_t ultimo_tam_seq_tipo = 0;
@@ -60,7 +79,7 @@ void mandarMensagem(msg_info info){
     uint8_t msg[68];
 
     // no máximo 2^4 - 1 = 63 bytes de dados
-    info.tamanho = (info.tamanho > 63) ? 63 : info.tamanho;
+    info.tamanho = (info.tamanho > TAM_MAX_DADOS) ? TAM_MAX_DADOS : info.tamanho;
 
     // 1 de inicio + 2 de tam/seq/tipo + n bytes de dados + 1 byte de paridade
     int tam_msg = 1 + 2 + info.tamanho + 1;
