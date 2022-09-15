@@ -45,4 +45,6 @@ uint8_t calcularParidade(int tam, uint8_t* dados);
 
 void imprimirMensagem(msg_info msg);
 
+void incseq(uint8_t *seq);
+
 #endif

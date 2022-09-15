@@ -8,45 +8,68 @@
 #include "ConexaoRawSocket.h"
 #include "rede.h"
 
-void executa_ls(msg_info msg){
+void executa_ls(msg_info msg) {
+    printf("entrando ls\n");
     msg_info aux = {};
     aux.inicio = MARCADOR_INICIO;
     aux.tamanho = TAM_MAX_DADOS;
     aux.dados = malloc(TAM_MAX_DADOS);
-    if(aux.dados == NULL){
+
+    if (aux.dados == NULL){
         printf("Erro no malloc\n");
         exit(1);
     }
-    char comando[TAM_MAX_DADOS] = "ls ";
-    strcat(comando, msg.dados);
-    printf("Comando: %s\n", comando);
+
+    printf("Comando: %s\n", msg.dados);
 
     FILE *arq = popen(comando, "r");
-    if(arq == NULL){
+    if (arq == NULL){
         printf("Erro POPEN\n");
         exit(1);
     }
 
+    uint8_t sequencia = 0;
     int lidos;
     while((lidos = fread(aux.dados, 1, TAM_MAX_DADOS, arq)) != 0){
-        //int lidos = fgets(aux.dados, TAM_MAX_DADOS, arq);
+        msg_info resposta;
+
         aux.tamanho = lidos;
         aux.inicio = MARCADOR_INICIO;
         aux.tipo = TIPO_DADOS;
         aux.paridade = calcularParidade(aux.tamanho, aux.dados);
-        //TODO sequencia
+        aux.sequencia = sequencia; //TODO sequencia
         printf("%s", aux.dados);
+
+remandar:
         mandarMensagem(aux);
+
+receber:
+        resposta = receberMensagem();
+
+        if (resposta.inicio != MARCADOR_INICIO) {
+            printf("erro marcador inicio resposta\n");
+            goto receber;
+        }
+
+        if (resposta.tipo == TIPO_NACK) {
+            printf("nack resposta\n");
+            goto remandar;
+        }
+
+        incseq(sequencia);
     }
-    pclose(arq);
-    //free(aux.dados);
-    //aux.dados = NULL;
-    aux.tamanho = 0;
+
+    free(aux.dados);
+
     aux.inicio = MARCADOR_INICIO;
+    aux.tamanho = 0;
+    aux.sequencia = 0;
     aux.tipo = TIPO_FIM_TX;
+    aux.dados = NULL;
     aux.paridade = 0;
-    //aux.paridade = calcularParidade(aux.tamanho, aux.dados);
+
     mandarMensagem(aux);
+    printf("saindo ls\n");
 }
 
 void executa_cd(msg_info msg){
@@ -88,7 +111,6 @@ int main() {
 
     for (;;) {
 
-start:
         recebe = receberMensagem();
 
         if (recebe.inicio == MARCADOR_INICIO) {
@@ -101,7 +123,7 @@ start:
 
                 mandarMensagem(nack);
 
-                goto start;
+                continue;
             }
 
             if (recebe.tipo == TIPO_CD) {

@@ -7,7 +7,10 @@
 #include "rede.h"
 
 void ls(char *opcoes) {
-    // TODO: em caso de erro deve printar o erro e sair
+    printf("entrando ls\n");
+    opcoes[TAM_MAX_DADOS - 1] = '\0'; // limitar string
+
+    uint8_t sequencia = 0;
 
     msg_info info;
     info.inicio = MARCADOR_INICIO;
@@ -37,7 +40,20 @@ void ls(char *opcoes) {
             continue;
         }
 
+        if (info.sequencia != sequencia) {
+            printf("ERRO sequencia ls obtido: %d esperado: %d\n", info.sequencia, sequencia);
+
+            msg_info nseq = nack;
+            nseq.sequencia = sequencia;
+
+            mandarMensagem(nseq);
+
+            free(info.dados);
+            continue;
+        }
+
         if (info.tipo == TIPO_FIM_TX) {
+            printf("fim tx\n");
             free(info.dados);
             break;
         }
@@ -47,40 +63,67 @@ void ls(char *opcoes) {
         }
         
         free(info.dados);
-    }
 
+        if (info.tipo == TIPO_ERRO) {
+            printf("foi um erro\n");
+            break;
+        }
+
+        msg_info aseq = ack;
+        aseq.sequencia = sequencia;
+        mandarMensagem(aseq);
+
+        incseq(sequencia);
+    }
+    printf("saindo ls\n");
 }
 
-void cd(char *diretorio) {
-start:
+void cd(char *terminal) {
+    printf("entrando cd\n");
+    terminal += 3; // ignora o 'cd '
+
     msg_info info;
     info.inicio = MARCADOR_INICIO;
-    info.tamanho = strlen(diretorio);
+    info.tamanho = strlen(terminal);
     info.sequencia = 0; // TODO
     info.tipo = TIPO_CD;
-    info.dados = diretorio;
+    info.dados = terminal;
     info.paridade = calcularParidade(info.tamanho, info.dados);
 
+    msg_info resposta;
+
+start:
     mandarMensagem(info);
 
-    info = receberMensagem();
+    resposta = receberMensagem();
 
-    if (info.inicio != MARCADOR_INICIO) {
-        free(info.dados);
+    if (resposta.inicio != MARCADOR_INICIO) {
+        printf("inicio errado\n");
+        free(resposta.dados);
         goto start;
     }
 
-    if (info.tipo == TIPO_OK) {
-        printf("Mudado de diretório\n");
-    } else if (info.tipo == TIPO_ERRO) {
-        for (int i = 0; i < info.tamanho; i++) {
-            putchar(info.dados[i]);
+    if (resposta.tipo == TIPO_OK) {
+        printf("OK! Mudado de diretório\n");
+    } else if (resposta.tipo == TIPO_ERRO) {
+        printf("tipo erro\n");
+        for (int i = 0; i < resposta.tamanho; i++) {
+            putchar(resposta.dados[i]);
         }
 
         putchar('\n'); // talvez nao precise
-    } else if (info.tipo == TIPO_NACK) {
+        free(resposta.dados);
+    } else if (resposta.tipo == TIPO_NACK) {
+        printf("tipo nack\n");
+        free(resposta.dados);
         goto start;
     }
+
+    printf("saindo cd\n");
+}
+
+void get(char* comando) {
+
 }
 
 
@@ -92,27 +135,24 @@ int main() {
 
     printf("---------- Terminal Cliente ----------\n");
     printf("$: ");
-    scanf("%99s", terminal);
-    unsigned int ini, tam, seq, tipo;
+    fgets(terminal, 98, stdin);
     char *dados;
-    
 
     msg_info recebe = {};
     msg_info envio = {};
     envio.sequencia = 0; // TODO
     envio.inicio = MARCADOR_INICIO;
 
-    while (strcmp(terminal, "exit")) {
+    while (strncmp(terminal, "exit", 4)) {
         // Faz o reconhecimento do comando digitado pelo usuário
-        if (!strcmp(terminal, "cd")) {
-
-            scanf("%99s", opcoes);
-            cd(opcoes);
+        if (!strncmp(terminal, "cd", 2)) {
+            cd(terminal);
             printf("$: ");
-            scanf("%99s", terminal);
+            fgets(terminal, 98, stdin);
             continue;
 
         } else if (!strcmp(terminal, "mkdir")) {
+            // TODO
 
             scanf("%99s", opcoes);
 
@@ -120,11 +160,10 @@ int main() {
             envio.tipo = TIPO_MKDIR;
             envio.dados = opcoes;
 
-        } else if (!strcmp(terminal, "ls")) {
-            scanf("%99s", opcoes);
-            ls(opcoes);
+        } else if (!strncmp(terminal, "ls", 2)) {
+            ls(terminal);
             printf("$: ");
-            scanf("%99s", terminal);
+            fgets(terminal, 98, stdin);
             continue;
         } else if (!strcmp(terminal, "get")) {
 
@@ -143,7 +182,7 @@ int main() {
         //mandarMensagem(envio);
 
         printf("$: ");
-        scanf("%99s", terminal);
+        fgets(terminal, 98, stdin);
     }
 
     envio.tamanho = 0;

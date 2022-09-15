@@ -191,3 +191,8 @@ void imprimirMensagem(msg_info msg) {
 
     printf("\tparidade: %2x\n", msg.paridade);
 }
+
+void incseq(uint8_t *seq) {
+    *seq = (*seq + 1) & 0b1111;
+}
+
