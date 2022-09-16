@@ -195,13 +195,13 @@ receber_tam:
         info = receberMensagem();
 
         if (info.inicio != MARCADOR_INICIO) {
-            printf("ERRO marcador inicio put\n");
+            //printf("ERRO marcador inicio put\n");
             free(info.dados);
             continue;
         }
 
         if (info.paridade != calcularParidade(info.tamanho, info.dados)) {
-            printf("ERRO paridade put\n");
+            //printf("ERRO paridade put\n");
 
             mandarMensagem(nack);
 
@@ -210,13 +210,13 @@ receber_tam:
         }
 
         if (info.tipo == TIPO_FIM_TX) {
-            printf("fim tx\n");
+            //printf("fim tx\n");
             free(info.dados);
             break;
         }
 
         if (info.sequencia != sequencia) {
-            printf("ERRO sequencia put obtido: %d esperado: %d\n", info.sequencia, sequencia);
+            //printf("ERRO sequencia put obtido: %d esperado: %d\n", info.sequencia, sequencia);
 
             msg_info nseq = nack;
             nseq.sequencia = sequencia;
@@ -236,7 +236,7 @@ receber_tam:
         free(info.dados);
 
         if (info.tipo == TIPO_ERRO) {
-            printf("foi um erro\n");
+            //printf("foi um erro\n");
             break;
         }
 
@@ -309,7 +309,7 @@ receber:
         }
 
         if (resposta.tipo == TIPO_NACK) {
-            printf("nack resposta\n");
+            //printf("nack resposta\n");
             goto remandar;
         }
 
@@ -468,13 +468,13 @@ resposta_comando:
         info = receberMensagem();
 
         if (info.inicio != MARCADOR_INICIO) {
-            printf("ERRO marcador inicio get\n");
+            //printf("ERRO marcador inicio get\n");
             free(info.dados);
             continue;
         }
 
         if (info.paridade != calcularParidade(info.tamanho, info.dados)) {
-            printf("ERRO paridade get\n");
+            //printf("ERRO paridade get\n");
 
             mandarMensagem(nack);
 
@@ -489,7 +489,7 @@ resposta_comando:
         }
 
         if (info.sequencia != sequencia) {
-            printf("ERRO sequencia get obtido: %d esperado: %d\n", info.sequencia, sequencia);
+            //printf("ERRO sequencia get obtido: %d esperado: %d\n", info.sequencia, sequencia);
 
             msg_info nseq = nack;
             nseq.sequencia = sequencia;
@@ -555,7 +555,7 @@ remandar_comando:
         resposta = receberMensagem();
 
         if (resposta.inicio != MARCADOR_INICIO) {
-            printf("ERRO marcador inicio ls\n");
+            //printf("ERRO marcador inicio ls\n");
             free(resposta.dados);
             continue;
         }
@@ -566,7 +566,7 @@ remandar_comando:
         }
 
         if (resposta.paridade != calcularParidade(resposta.tamanho, resposta.dados)) {
-            printf("ERRO paridade ls\n");
+            //printf("ERRO paridade ls\n");
 
             mandarMensagem(nack);
 
@@ -575,13 +575,13 @@ remandar_comando:
         }
 
         if (resposta.tipo == TIPO_FIM_TX) {
-            printf("fim tx\n");
+            //printf("fim tx\n");
             free(resposta.dados);
             break;
         }
 
         if (resposta.sequencia != sequencia) {
-            printf("ERRO sequencia ls obtido: %d esperado: %d\n", resposta.sequencia, sequencia);
+            //printf("ERRO sequencia ls obtido: %d esperado: %d\n", resposta.sequencia, sequencia);
             imprimirMensagem(resposta);
 
             msg_info nseq = nack;
@@ -600,7 +600,7 @@ remandar_comando:
         free(resposta.dados);
 
         if (resposta.tipo == TIPO_ERRO) {
-            printf("foi um erro\n");
+            //printf("foi um erro\n");
             break;
         }
 
