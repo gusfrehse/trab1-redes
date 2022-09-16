@@ -266,6 +266,51 @@ start:
     printf("saindo cd\n");
 }
 
+void mkdir(char *terminal) {
+    printf("entrando mkdir\n");
+    terminal += 6; // ignora o 'mkdir '
+    terminal[strcspn(terminal, "\n")] = '\0';
+
+    msg_info info;
+    info.inicio = MARCADOR_INICIO;
+    info.tamanho = strlen(terminal);
+    info.sequencia = 0; // TODO
+    info.tipo = TIPO_MKDIR;
+    info.dados = terminal;
+    info.paridade = calcularParidade(info.tamanho, info.dados);
+
+    msg_info resposta;
+
+start:
+    mandarMensagem(info);
+
+    resposta = receberMensagem();
+
+    if (resposta.inicio != MARCADOR_INICIO) {
+        printf("inicio errado\n");
+        free(resposta.dados);
+        goto start;
+    }
+
+    if (resposta.tipo == TIPO_OK) {
+        printf("OK! Criado diretório\n");
+    } else if (resposta.tipo == TIPO_ERRO) {
+        printf("tipo erro\n");
+        for (int i = 0; i < resposta.tamanho; i++) {
+            putchar(resposta.dados[i]);
+        }
+
+        putchar('\n'); // talvez nao precise
+        free(resposta.dados);
+    } else if (resposta.tipo == TIPO_NACK) {
+        printf("tipo nack\n");
+        free(resposta.dados);
+        goto start;
+    }
+
+    printf("saindo mkdir\n");
+}
+
 int main() {
     iniciaSocket();
 
@@ -289,14 +334,11 @@ int main() {
             fgets(terminal, 98, stdin);
             continue;
 
-        } else if (!strcmp(terminal, "mkdir")) {
-
-            //scanf("%99s", opcoes);
-
-            //envio.tamanho = strlen(opcoes);
-            envio.tipo = TIPO_MKDIR;
-            //envio.dados = opcoes;
-
+        } else if (!strncmp(terminal, "mkdir", 5)) {
+            mkdir(terminal);
+            printf("$: ");
+            fgets(terminal, 98, stdin);
+            continue;
         } else if (!strncmp(terminal, "ls", 2)) {
             ls(terminal);
             printf("$: ");
