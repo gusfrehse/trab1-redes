@@ -128,7 +128,7 @@ receber:
 
     mandarMensagem(aux);
     printf("saindo get\n");
-    
+    fclose(arq);
 
 }
 
@@ -198,6 +198,7 @@ receber:
     aux.paridade = 0;
 
     mandarMensagem(aux);
+    pclose(arq);
     printf("saindo ls\n");
 }
 
@@ -396,7 +397,7 @@ resposta_comando:
 
     int escritos = fwrite(buffer, 1, tamanho_arq, outFile);
     printf("%d bytes escritos\n", escritos);
-
+    fclose(outFile);
     printf("saindo get\n");
 }
 
@@ -590,6 +591,7 @@ void local_ls(char *nome, int tam){
         //msg_info resposta;
         printf("%s", dados);
     }
+    pclose(arq);
 }
 
 void local_cd(char *nome_dir, int tam){
