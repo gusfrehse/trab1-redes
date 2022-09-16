@@ -445,14 +445,14 @@ resposta_comando:
     }
 
     // ok!
-    printf("resposta, é para ser descritor com nome do arquivo!\n");
+    //printf("resposta, é para ser descritor com nome do arquivo!\n");
     imprimirMensagem(resposta);
     assert(resposta.tipo == TIPO_DESCRITOR_ARQUIVO);
 
     //uint32_t tamanho_arq = *((uint32_t *) resposta.dados);
     uint32_t tamanho_arq = resposta.dados[0] | (resposta.dados[1] << 8) | (resposta.dados[2] << 16) | (resposta.dados[3] << 24);
 
-    printf("arquivo é de tamanho %d\n", tamanho_arq);
+    //printf("arquivo é de tamanho %d\n", tamanho_arq);
 
     int pos = 0;
     uint8_t *buffer = calloc(tamanho_arq, sizeof(uint8_t));
@@ -487,7 +487,7 @@ resposta_comando:
         }
 
         if (info.tipo == TIPO_FIM_TX) {
-            printf("fim tx\n");
+            //printf("fim tx\n");
             free(info.dados);
             break;
         }
@@ -531,13 +531,13 @@ resposta_comando:
     }
 
     int escritos = fwrite(buffer, 1, tamanho_arq, outFile);
-    printf("%d bytes escritos\n", escritos);
+    //printf("%d bytes escritos\n", escritos);
     fclose(outFile);
-    printf("saindo get\n");
+    //printf("saindo get\n");
 }
 
 void ls(char *comando) {
-    printf("entrando ls\n");
+    //printf("entrando ls\n");
     comando[TAM_MAX_DADOS - 1] = '\0'; // limitar string
     comando[strcspn(comando, "\n")] = '\0';
 
@@ -614,7 +614,7 @@ remandar_comando:
 
         incseq(&sequencia);
     }
-    printf("saindo ls\n");
+    //printf("saindo ls\n");
 }
 
 void cd(char *terminal) {
