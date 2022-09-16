@@ -21,7 +21,7 @@ int main() {
     for (;;) {
 
         usleep(500000);
-        printf("esperando msg..\n");
+        //printf("esperando msg..\n");
         recebe = receberMensagem();
 
         if (recebe.inicio == MARCADOR_INICIO) {
@@ -30,7 +30,7 @@ int main() {
                 continue;
 
             printf("main: Recebi mensagem ok:\n");
-            imprimirMensagem(recebe);
+            //imprimirMensagem(recebe);
 
             if (calcularParidade(recebe.tamanho, recebe.dados) != recebe.paridade) {
                 free(recebe.dados);
@@ -70,8 +70,8 @@ int main() {
 
         } else {
 
-            printf("Recebi algo em que o marcador de início não bate:\n");
-            imprimirMensagem(recebe);
+            //printf("Recebi algo em que o marcador de início não bate:\n");
+            //imprimirMensagem(recebe);
 
         }
 
