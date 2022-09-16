@@ -209,6 +209,7 @@ void ls(char *comando) {
 void cd(char *terminal) {
     printf("entrando cd\n");
     terminal += 3; // ignora o 'cd '
+    terminal[strcspn(terminal, "\n")] = '\0';
 
     msg_info info;
     info.inicio = MARCADOR_INICIO;
