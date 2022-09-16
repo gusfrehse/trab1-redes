@@ -886,6 +886,7 @@ void local_ls(char *nome, int tam){
     while((lidos = fread(dados, 1, tam, arq)) != 0){
         printf("%s", dados);
     }
+    putchar('\n');
     pclose(arq);
 }
 
