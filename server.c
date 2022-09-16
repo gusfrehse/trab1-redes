@@ -29,7 +29,7 @@ int main() {
             if (recebe.tipo == TIPO_TIMEOUT)
                 continue;
 
-            printf("main: Recebi mensagem ok:\n");
+            //printf("main: Recebi mensagem ok:\n");
             //imprimirMensagem(recebe);
 
             if (calcularParidade(recebe.tamanho, recebe.dados) != recebe.paridade) {
