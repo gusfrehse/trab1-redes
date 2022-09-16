@@ -1,12 +1,136 @@
-//#define _XOPEN_SOURCE 500
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "ConexaoRawSocket.h"
 #include "rede.h"
+
+void executa_get(msg_info msg) {
+    printf("entrando get\n");
+    msg_info aux = {};
+    aux.inicio = MARCADOR_INICIO;
+    aux.tamanho = TAM_MAX_DADOS;
+    aux.dados = malloc(TAM_MAX_DADOS);
+
+    if (aux.dados == NULL){
+        printf("Erro no malloc\n");
+        exit(1);
+    }
+
+    printf("Arquivo: %s\n", msg.dados);
+
+    FILE *arq = fopen(msg.dados, "r");
+    if (arq == NULL){
+        // erro ao ler arquivo
+        char *erro_str = strerror(errno);
+        printf("Erro FOPEN\n");
+
+        msg_info erro;
+        erro.inicio = MARCADOR_INICIO;
+        erro.tipo = TIPO_ERRO;
+        erro.sequencia = 0;
+
+        erro.dados = malloc(TAM_MAX_DADOS);
+        if (!erro.dados) {
+            printf("erro malloc\n");
+            exit(1);
+        }
+
+        memcpy(erro.dados, erro_str, TAM_MAX_DADOS);
+        erro.dados[TAM_MAX_DADOS - 1] = '\0';
+        erro.tamanho = strlen(erro.dados);
+        erro.paridade = calcularParidade(erro.tamanho, erro.dados);
+        mandarMensagem(erro);
+
+        return;
+    }
+
+    fseek(arq, 0, SEEK_END);
+
+    uint32_t arq_tam = ftell(arq);
+
+    rewind(arq);
+    
+    msg_info descritor;
+    descritor.inicio = MARCADOR_INICIO;
+    descritor.tamanho = 4;
+    descritor.sequencia = 0;
+    descritor.tipo = TIPO_DESCRITOR_ARQUIVO;
+    descritor.dados = (uint8_t *) &arq_tam;
+    descritor.paridade = calcularParidade(descritor.tamanho, descritor.dados);
+
+mandar_descritor:
+    mandarMensagem(descritor);
+
+receber_descritor_ok:
+    msg_info descritor_ok = receberMensagem();
+
+    if (descritor_ok.inicio != MARCADOR_INICIO) {
+        free(descritor_ok.dados);
+        goto receber_descritor_ok;
+    }
+
+    if (descritor_ok.paridade != calcularParidade(descritor_ok.tamanho, descritor_ok.dados)) {
+        free(descritor_ok.dados);
+        // wtf
+        printf("eita");
+    }
+
+    if (descritor_ok.tipo == TIPO_NACK) {
+        free(descritor_ok.dados);
+        goto mandar_descritor;
+    }
+
+    assert(descritor_ok.tipo == TIPO_ACK);
+
+    uint8_t sequencia = 0;
+    int lidos;
+    while((lidos = fread(aux.dados, 1, TAM_MAX_DADOS, arq)) != 0){
+        msg_info resposta;
+
+        aux.tamanho = lidos;
+        aux.inicio = MARCADOR_INICIO;
+        aux.tipo = TIPO_DADOS;
+        aux.paridade = calcularParidade(aux.tamanho, aux.dados);
+        aux.sequencia = sequencia;
+        printf("%s", aux.dados);
+
+remandar:
+        mandarMensagem(aux);
+
+receber:
+        resposta = receberMensagem();
+
+        if (resposta.inicio != MARCADOR_INICIO) {
+            printf("erro marcador inicio resposta\n");
+            goto receber;
+        }
+
+        if (resposta.tipo == TIPO_NACK) {
+            printf("nack resposta\n");
+            goto remandar;
+        }
+
+        incseq(&sequencia);
+    }
+
+    free(aux.dados);
+
+    aux.inicio = MARCADOR_INICIO;
+    aux.tamanho = 0;
+    aux.sequencia = 0;
+    aux.tipo = TIPO_FIM_TX;
+    aux.dados = NULL;
+    aux.paridade = 0;
+
+    mandarMensagem(aux);
+    printf("saindo get\n");
+    
+
+}
 
 void executa_ls(msg_info msg) {
     printf("entrando ls\n");
@@ -22,7 +146,7 @@ void executa_ls(msg_info msg) {
 
     printf("Comando: %s\n", msg.dados);
 
-    FILE *arq = popen(comando, "r");
+    FILE *arq = popen(aux.dados, "r");
     if (arq == NULL){
         printf("Erro POPEN\n");
         exit(1);
@@ -56,7 +180,7 @@ receber:
             goto remandar;
         }
 
-        incseq(sequencia);
+        incseq(&sequencia);
     }
 
     free(aux.dados);

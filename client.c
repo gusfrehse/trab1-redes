@@ -2,22 +2,146 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "ConexaoRawSocket.h"
 #include "rede.h"
 
-void ls(char *opcoes) {
+void get(char *comando) {
+    printf("entrando get\n");
+
+    comando += 4; // consome "get "
+    comando[TAM_MAX_DADOS - 1] = '\0'; // limitar string
+
+    msg_info info;
+    info.inicio = MARCADOR_INICIO;
+    info.tamanho = strlen(comando) + 1;
+    info.sequencia = 0;
+    info.tipo = TIPO_GET;
+    info.dados = comando;
+    info.paridade = calcularParidade(info.tamanho, info.dados);
+
+    mandarMensagem(info);
+
+resposta_comando:
+    msg_info resposta = receberMensagem();
+
+    if (resposta.inicio != MARCADOR_INICIO) {
+        free(resposta.dados);
+        goto resposta_comando;
+    }
+
+    if (resposta.paridade != calcularParidade(resposta.tamanho, resposta.dados)) {
+        free(resposta.dados);
+        
+        mandarMensagem(nack);
+
+        goto resposta_comando;
+    }
+
+    if (resposta.tipo == TIPO_NACK) {
+        free(resposta.dados);
+        goto resposta_comando;
+    }
+
+    if (resposta.tipo == TIPO_ERRO) {
+        for (int i = 0; i < resposta.tamanho; i++) {
+            putchar(resposta.dados[i]);
+        }
+        putchar('\n');
+
+        free(resposta.dados);
+        return;
+    }
+
+    // ok!
+    assert(resposta.tipo == TIPO_DESCRITOR_ARQUIVO);
+
+    int tamanho_arq = resposta.dados[0] + (resposta.dados[1] << 8) + (resposta.dados[2]) << 16 + (resposta.dados[3] << 24);
+
+    int pos = 0;
+    uint8_t *buffer = calloc(tamanho_arq, sizeof(uint8_t));
+
+    if (!buffer) {
+        perror("get: malloc");
+        exit(1);
+    }
+
+    free(resposta.dados);
+
+    mandarMensagem(ack);
+
+    uint8_t sequencia = 0;
+
+    while (1) {
+        info = receberMensagem();
+
+        if (info.inicio != MARCADOR_INICIO) {
+            printf("ERRO marcador inicio get\n");
+            free(info.dados);
+            continue;
+        }
+
+        if (info.paridade != calcularParidade(info.tamanho, info.dados)) {
+            printf("ERRO paridade get\n");
+
+            mandarMensagem(nack);
+
+            free(info.dados);
+            continue;
+        }
+
+        if (info.sequencia != sequencia) {
+            printf("ERRO sequencia get obtido: %d esperado: %d\n", info.sequencia, sequencia);
+
+            msg_info nseq = nack;
+            nseq.sequencia = sequencia;
+
+            mandarMensagem(nseq);
+
+            free(info.dados);
+            continue;
+        }
+
+        if (info.tipo == TIPO_FIM_TX) {
+            printf("fim tx\n");
+            free(info.dados);
+            break;
+        }
+
+        for (int i = 0; i < info.tamanho; i++) {
+            buffer[pos++] = info.dados[i];
+        }
+        
+        free(info.dados);
+
+        if (info.tipo == TIPO_ERRO) {
+            printf("foi um erro\n");
+            break;
+        }
+
+        msg_info aseq = ack;
+        aseq.sequencia = sequencia;
+        mandarMensagem(aseq);
+
+        incseq(&sequencia);
+    }
+
+    printf("saindo get\n");
+}
+
+void ls(char *comando) {
     printf("entrando ls\n");
-    opcoes[TAM_MAX_DADOS - 1] = '\0'; // limitar string
+    comando[TAM_MAX_DADOS - 1] = '\0'; // limitar string
 
     uint8_t sequencia = 0;
 
     msg_info info;
     info.inicio = MARCADOR_INICIO;
-    info.tamanho = strlen(opcoes) + 1;
+    info.tamanho = strlen(comando) + 1;
     info.sequencia = 0; // TODO
     info.tipo = TIPO_LS;
-    info.dados = opcoes;
+    info.dados = comando;
     info.paridade = calcularParidade(info.tamanho, info.dados);
 
     mandarMensagem(info);
@@ -73,7 +197,7 @@ void ls(char *opcoes) {
         aseq.sequencia = sequencia;
         mandarMensagem(aseq);
 
-        incseq(sequencia);
+        incseq(&sequencia);
     }
     printf("saindo ls\n");
 }
@@ -122,16 +246,10 @@ start:
     printf("saindo cd\n");
 }
 
-void get(char* comando) {
-
-}
-
-
 int main() {
     iniciaSocket();
 
     char terminal[100];
-    char opcoes[100];
 
     printf("---------- Terminal Cliente ----------\n");
     printf("$: ");
@@ -152,13 +270,12 @@ int main() {
             continue;
 
         } else if (!strcmp(terminal, "mkdir")) {
-            // TODO
 
-            scanf("%99s", opcoes);
+            //scanf("%99s", opcoes);
 
-            envio.tamanho = strlen(opcoes);
+            //envio.tamanho = strlen(opcoes);
             envio.tipo = TIPO_MKDIR;
-            envio.dados = opcoes;
+            //envio.dados = opcoes;
 
         } else if (!strncmp(terminal, "ls", 2)) {
             ls(terminal);
