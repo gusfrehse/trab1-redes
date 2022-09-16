@@ -89,6 +89,7 @@ receber_descritor_ok:
     uint8_t sequencia = 0;
     int lidos;
     while((lidos = fread(aux.dados, 1, TAM_MAX_DADOS, arq)) != 0){
+        printf("mandando %d bytes\n", lidos);
         msg_info resposta;
 
         aux.tamanho = lidos;
@@ -96,7 +97,7 @@ receber_descritor_ok:
         aux.tipo = TIPO_DADOS;
         aux.paridade = calcularParidade(aux.tamanho, aux.dados);
         aux.sequencia = sequencia;
-        printf("%s", aux.dados);
+        printf("%10s", aux.dados); // TODO remover pode dar segfault
 
 remandar:
         mandarMensagem(aux);
@@ -265,6 +266,11 @@ int main() {
 
             if (recebe.tipo == TIPO_LS){
                 executa_ls(recebe);
+                continue;
+            }
+
+            if (recebe.tipo == TIPO_GET) {
+                executa_get(recebe);
                 continue;
             }
 

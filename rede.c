@@ -39,10 +39,10 @@ int soq;
 uint8_t ultimo_tam_seq_tipo = 0;
 
 void iniciaSocket(){
-    //enp1s0f0
-    //enp34s0
-    //enp2s0
-    soq = ConexaoRawSocket("enp2s0");
+    //joao: enp1s0f0
+    //gus1: enp34s0
+    //gus2: enp2s0
+    soq = ConexaoRawSocket("enp34s0");
 }
 
 int pegaSocket() {
@@ -183,13 +183,19 @@ void imprimirMensagem(msg_info msg) {
 
     verificaTipoMensagem(msg.tipo);
 
-    printf("\tdados:   %d  ", msg.tamanho);
+    printf("\tdados:     '", msg.tamanho);
 
     for (int i = 0; i < msg.tamanho; i++) {
-        printf("%c ", msg.dados[i]);
+        printf("%x ", msg.dados[i]);
+    }
+    
+    printf("' | '");
+
+    for (int i = 0; i < msg.tamanho; i++) {
+        printf("%c", msg.dados[i]);
     }
 
-    printf("\n");
+    printf("'\n");
 
     printf("\tparidade: %2x\n", msg.paridade);
 }
