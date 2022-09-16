@@ -67,7 +67,6 @@ int main() {
             continue;
         } else {
             printf("%s: command not found\n", terminal);
-        }
 
         //mandarMensagem(envio);
 

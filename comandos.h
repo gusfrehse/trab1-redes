@@ -13,6 +13,7 @@
 
 // Comandos servidor
 void executa_get(msg_info msg);
+void executa_put(msg_info msg);
 void executa_ls(msg_info msg);
 void executa_cd(msg_info msg);
 void executa_mkdir(msg_info msg);

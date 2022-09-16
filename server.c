@@ -54,6 +54,10 @@ int main() {
                 executa_get(recebe);
             }
 
+            if (recebe.tipo == TIPO_PUT) {
+                executa_put(recebe);
+            }
+
             if (recebe.tipo == TIPO_MKDIR){
                 executa_mkdir(recebe);
                 continue;
