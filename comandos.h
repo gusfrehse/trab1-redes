@@ -25,5 +25,6 @@ void get(char *comando);
 void ls(char *comando);
 void cd(char *terminal);
 void mkdir_client(char *terminal);
+void put_client(char *terminal);
 
 #endif 

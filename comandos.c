@@ -2,6 +2,49 @@
 #include <stdio.h>
 #include "comandos.h"
 
+void executa_put(msg_info msg) {
+    printf("entrando put\n");
+    msg_info aux = {};
+    msg_info descritor_ok = {};
+    aux.inicio = MARCADOR_INICIO;
+    aux.tamanho = TAM_MAX_DADOS;
+    aux.dados = malloc(TAM_MAX_DADOS);
+
+    if (aux.dados == NULL){
+        printf("Erro no malloc\n");
+        exit(1);
+    }
+
+    printf("Arquivo: %s\n", msg.dados);
+
+    FILE *arq = fopen(msg.dados, "w");
+    if (arq == NULL){
+        // erro ao ler arquivo
+        char *erro_str = strerror(errno);
+        printf("Erro FOPEN\n");
+
+        msg_info erro;
+        erro.inicio = MARCADOR_INICIO;
+        erro.tipo = TIPO_ERRO;
+        erro.sequencia = 0;
+
+        erro.dados = malloc(TAM_MAX_DADOS);
+        if (!erro.dados) {
+            printf("erro malloc\n");
+            exit(1);
+        }
+
+        memcpy(erro.dados, erro_str, TAM_MAX_DADOS);
+        erro.dados[TAM_MAX_DADOS - 1] = '\0';
+        erro.tamanho = strlen(erro.dados);
+        erro.paridade = calcularParidade(erro.tamanho, erro.dados);
+        mandarMensagem(erro);
+
+        return;
+    }
+
+}
+
 void executa_get(msg_info msg) {
     printf("entrando get\n");
     msg_info aux = {};
@@ -105,11 +148,13 @@ receber:
         resposta = receberMensagem();
 
         if (resposta.inicio != MARCADOR_INICIO) {
+            // TODO free possivelmente 
             printf("erro marcador inicio resposta\n");
             goto receber;
         }
 
         if (resposta.tipo == TIPO_NACK) {
+            // TODO free possivelmente e timeout quase certeza
             printf("nack resposta\n");
             goto remandar;
         }
@@ -439,7 +484,7 @@ remandar_comando:
 
             mandarMensagem(nack);
 
-            free(info.dados);
+            free(resposta.dados);
             continue;
         }
 
@@ -572,6 +617,168 @@ receber_resposta:
     }
 
     printf("saindo mkdir\n");
+}
+
+void put_client(char *terminal) {
+    printf("entrando put\n");
+
+    terminal += 4; // consome "put "
+    terminal[TAM_MAX_DADOS - 1] = '\0'; // limitar string
+    terminal[strcspn(terminal, "\n")] = '\0';
+
+    FILE *infile = fopen(terminal, "r");
+    if (!infile) {
+        perror("erro cliente: fopen");
+        return;
+    }
+
+    msg_info resposta = {};
+    msg_info info;
+    info.inicio = MARCADOR_INICIO;
+    info.tamanho = strlen(terminal) + 1;
+    info.sequencia = 0;
+    info.tipo = TIPO_PUT;
+    info.dados = terminal;
+    info.paridade = calcularParidade(info.tamanho, info.dados);
+
+remandar_comando:
+    mandarMensagem(info);
+
+resposta_comando:
+    resposta = receberMensagem();
+
+    if (resposta.inicio != MARCADOR_INICIO) {
+        free(resposta.dados);
+        goto resposta_comando;
+    }
+
+    if (resposta.paridade != calcularParidade(resposta.tamanho, resposta.dados)) {
+        free(resposta.dados);
+        
+        mandarMensagem(nack);
+
+        goto resposta_comando;
+    }
+
+    if (resposta.tipo == TIPO_NACK || resposta.tipo == TIPO_TIMEOUT) {
+        free(resposta.dados);
+        goto remandar_comando;
+    }
+
+    if (resposta.tipo == TIPO_ERRO) {
+        for (int i = 0; i < resposta.tamanho; i++) {
+            putchar(resposta.dados[i]);
+        }
+        putchar('\n');
+
+        free(resposta.dados);
+        return;
+    }
+
+    assert(resposta.tipo == TIPO_ACK);
+    printf("recebi ack da resposta do nome\n");
+
+    fseek(infile, 0, SEEK_END);
+    uint32_t tam_arq = ftell(infile);
+    rewind(infile);
+
+    msg_info resposta_tamanho;
+    msg_info tamanho;
+    tamanho.inicio = MARCADOR_INICIO;
+    tamanho.tamanho = 4;
+    tamanho.sequencia = 0;
+    tamanho.tipo = TIPO_DESCRITOR_ARQUIVO;
+    tamanho.dados = malloc(4);
+    tamanho.dados[0] = tam_arq & 0b11111111;
+    tamanho.dados[1] = (tam_arq >> 8) & 0b11111111;
+    tamanho.dados[2] = (tam_arq >> 16) & 0b11111111;
+    tamanho.dados[3] = (tam_arq >> 24) & 0b11111111;
+    tamanho.paridade = calcularParidade(tamanho.tamanho, tamanho.dados);
+
+manda_tamanho:
+    mandarMensagem(tamanho);
+
+recebe_resposta_tamanho:
+    resposta_tamanho = receberMensagem();
+
+    if (resposta_tamanho.inicio != MARCADOR_INICIO) {
+        free(resposta_tamanho.dados);
+        goto resposta_comando;
+    }
+
+    if (resposta_tamanho.paridade != calcularParidade(resposta_tamanho.tamanho, resposta_tamanho.dados)) {
+        free(resposta_tamanho.dados);
+        
+        mandarMensagem(nack);
+
+        goto resposta_comando;
+    }
+
+    if (resposta_tamanho.tipo == TIPO_NACK || resposta_tamanho.tipo == TIPO_TIMEOUT) {
+        free(resposta_tamanho.dados);
+        goto remandar_comando;
+    }
+
+    if (resposta_tamanho.tipo == TIPO_ERRO) {
+        for (int i = 0; i < resposta_tamanho.tamanho; i++) {
+            putchar(resposta_tamanho.dados[i]);
+        }
+        putchar('\n');
+
+        free(resposta_tamanho.dados);
+        return;
+    }
+
+    assert(resposta_tamanho.tipo == TIPO_ACK);
+    printf("recebi ack do tamanho\n");
+
+    uint8_t buff[TAM_MAX_DADOS];
+    uint8_t sequencia = 0;
+    int lidos;
+    while ((lidos = fread(buff, 1, TAM_MAX_DADOS, infile))) {
+        msg_info resposta_dados;
+        msg_info dados;
+        dados.inicio = MARCADOR_INICIO;
+        dados.tamanho = lidos;
+        dados.sequencia = sequencia;
+        dados.tipo = TIPO_DADOS;
+        dados.dados = buff;
+        dados.paridade = calcularParidade(dados.tamanho, dados.dados);
+
+remandar_dados:
+        mandarMensagem(dados);
+
+receber_resposta_dados:
+        resposta_dados = receberMensagem();
+
+        if (resposta_dados.inicio != MARCADOR_INICIO) {
+            printf("erro marcador inicio resposta\n");
+            free(resposta_dados.dados);
+            goto receber_resposta_dados;
+        }
+
+        if (resposta_dados.tipo == TIPO_NACK || resposta_dados.tipo == TIPO_TIMEOUT) {
+            printf("nack resposta\n");
+            free(resposta_dados.dados);
+            goto remandar_dados;
+        }
+
+        incseq(&sequencia);
+    }
+
+    msg_info fim_tx;
+
+    fim_tx.inicio = MARCADOR_INICIO;
+    fim_tx.tamanho = 0;
+    fim_tx.sequencia = 0;
+    fim_tx.tipo = TIPO_FIM_TX;
+    fim_tx.dados = NULL;
+    fim_tx.paridade = 0;
+
+    mandarMensagem(fim_tx);
+
+    fclose(infile);
+    printf("saindo put\n");
 }
 
 void local_ls(char *nome, int tam){
