@@ -229,9 +229,9 @@ receber_tam:
 
         for (int i = 0; i < info.tamanho; i++) {
             buffer[pos++] = info.dados[i];
-            putchar(info.dados[i]);
+            //putchar(info.dados[i]);
         }
-        putchar('\n');
+        //putchar('\n');
         
         free(info.dados);
 
@@ -295,7 +295,7 @@ void executa_ls(msg_info msg) {
         aux.sequencia = sequencia;
         aux.tipo = TIPO_DADOS;
         aux.paridade = calcularParidade(aux.tamanho, aux.dados);
-        printf("%s", aux.dados);
+        //printf("%s", aux.dados);
 
 remandar:
         mandarMensagem(aux);
@@ -326,7 +326,7 @@ receber:
     aux.tipo = TIPO_FIM_TX;
     aux.dados = NULL;
     aux.paridade = 0;
-
+    
     mandarMensagem(aux);
     pclose(arq);
     //printf("saindo ls\n");

@@ -41,24 +41,29 @@ int main() {
             }
 
             if (recebe.tipo == TIPO_CD) {
+                printf("cd\n");
                 executa_cd(recebe);
                 continue;
             }
 
             if (recebe.tipo == TIPO_LS){
+                printf("ls\n");
                 executa_ls(recebe);
                 continue;
             }
 
             if (recebe.tipo == TIPO_GET) {
+                printf("get\n");
                 executa_get(recebe);
             }
 
             if (recebe.tipo == TIPO_PUT) {
+                printf("put\n");
                 executa_put(recebe);
             }
 
             if (recebe.tipo == TIPO_MKDIR){
+                printf("mkdir\n");
                 executa_mkdir(recebe);
                 continue;
             }
