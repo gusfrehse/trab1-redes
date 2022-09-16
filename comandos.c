@@ -880,7 +880,7 @@ void local_ls(char *nome, int tam){
     int lidos;
     char *dados = malloc(tam);
     while((lidos = fread(dados, 1, tam, arq)) != 0){
-        printf("%s", dados);
+        for (int i = 0; i < lidos; i++) putchar(dados[i]);
     }
     putchar('\n');
     pclose(arq);
