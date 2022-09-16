@@ -442,7 +442,7 @@ resposta_comando:
 
     // ok!
     //printf("resposta, é para ser descritor com nome do arquivo!\n");
-    imprimirMensagem(resposta);
+    //imprimirMensagem(resposta);
     assert(resposta.tipo == TIPO_DESCRITOR_ARQUIVO);
 
     //uint32_t tamanho_arq = *((uint32_t *) resposta.dados);
@@ -582,7 +582,7 @@ remandar_comando:
 
         if (resposta.sequencia != sequencia) {
             //printf("ERRO sequencia ls obtido: %d esperado: %d\n", resposta.sequencia, sequencia);
-            imprimirMensagem(resposta);
+            //imprimirMensagem(resposta);
 
             msg_info nseq = nack;
             nseq.sequencia = sequencia;
