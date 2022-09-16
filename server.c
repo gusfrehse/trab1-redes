@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <assert.h>
+#include <sys/stat.h>
 
 #include "ConexaoRawSocket.h"
 #include "rede.h"
@@ -242,9 +243,12 @@ void executa_mkdir(msg_info msg){
     char nome_dir[100];
     strcpy(nome_dir, msg.dados);
 
-    if(mkdir(nome_dir, 755) != 0){
+    if(mkdir(nome_dir, 0755) != 0){
+        char *err_str = strerror(errno);
+
         aux.tipo = TIPO_ERRO;
-        aux.dados = 0;
+        aux.tamanho = strlen(err_str) + 1;
+        aux.dados = err_str;
         aux.paridade = calcularParidade(aux.tamanho, aux.dados);
         printf("Erro ao criar diretório!");
     }
@@ -295,6 +299,7 @@ int main() {
 
             if (recebe.tipo == TIPO_GET) {
                 executa_get(recebe);
+            }
 
             if (recebe.tipo == TIPO_MKDIR){
                 executa_mkdir(recebe);
