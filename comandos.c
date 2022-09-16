@@ -3,7 +3,7 @@
 #include "comandos.h"
 
 void executa_get(msg_info msg) {
-    printf("entrando get\n");
+    //printf("entrando get\n");
     msg_info aux = {};
     msg_info descritor_ok = {};
     aux.inicio = MARCADOR_INICIO;
@@ -88,7 +88,7 @@ receber_descritor_ok:
     uint8_t sequencia = 0;
     int lidos;
     while((lidos = fread(aux.dados, 1, TAM_MAX_DADOS, arq)) != 0){
-        printf("mandando %d bytes\n", lidos);
+        //printf("mandando %d bytes\n", lidos);
         msg_info resposta;
 
         aux.tamanho = lidos;
@@ -106,13 +106,13 @@ receber:
 
         if (resposta.inicio != MARCADOR_INICIO) {
             // TODO free possivelmente 
-            printf("erro marcador inicio resposta\n");
+            //printf("erro marcador inicio resposta\n");
             goto receber;
         }
 
         if (resposta.tipo == TIPO_NACK) {
             // TODO free possivelmente e timeout quase certeza
-            printf("nack resposta\n");
+            //printf("nack resposta\n");
             goto remandar;
         }
 
@@ -129,19 +129,19 @@ receber:
     aux.paridade = 0;
 
     mandarMensagem(aux);
-    printf("saindo get\n");
+    //printf("saindo get\n");
     fclose(arq);
 
 }
 
 void executa_put(msg_info msg){
-    printf("entrando no put\n");
+    //printf("entrando no put\n");
     msg_info aux = {};
     aux.inicio = MARCADOR_INICIO;
 
     char nome_arq[100] = {};
     strcpy(nome_arq, msg.dados);
-    printf("Arquivo: %s\n", nome_arq);
+    //printf("Arquivo: %s\n", nome_arq);
 
     FILE *arq = fopen(nome_arq , "w");
     if(!arq) {
@@ -183,7 +183,7 @@ receber_tam:
 
     uint32_t tamanho_arq = aux.dados[0] | (aux.dados[1] << 8) | (aux.dados[2] << 16) | (aux.dados[3] << 24);
 
-    printf("O arquivo é de tamanho %d\n", tamanho_arq);
+    //printf("O arquivo é de tamanho %d\n", tamanho_arq);
 
     uint8_t sequencia = 0;
 
@@ -259,16 +259,16 @@ receber_tam:
     }
 
     int escritos = fwrite(buffer, 1, tamanho_arq, outFile);
-    printf("%d bytes escritos\n", escritos);
+    //printf("%d bytes escritos\n", escritos);
     fclose(outFile);
 
-    printf("saindo put\n");
+    //printf("saindo put\n");
 
     fclose(arq);
 }
 
 void executa_ls(msg_info msg) {
-    printf("entrando ls\n");
+    //printf("entrando ls\n");
     msg_info aux = {};
     aux.inicio = MARCADOR_INICIO;
     aux.tamanho = TAM_MAX_DADOS;
@@ -279,7 +279,7 @@ void executa_ls(msg_info msg) {
         exit(1);
     }
 
-    printf("Comando: %s\n", msg.dados);
+    //printf("Comando: %s\n", msg.dados);
 
     FILE *arq = popen(msg.dados, "r");
     if (arq == NULL){
@@ -287,12 +287,12 @@ void executa_ls(msg_info msg) {
         exit(1);
     }
 
-    printf("vou comecar a mandar dados\n");
+    //printf("vou comecar a mandar dados\n");
 
     uint8_t sequencia = 0;
     int lidos;
     while((lidos = fread(aux.dados, 1, TAM_MAX_DADOS, arq)) != 0){
-        printf("mandando %d bytes\n", lidos);
+        //printf("mandando %d bytes\n", lidos);
         msg_info resposta;
 
         aux.inicio = MARCADOR_INICIO;
@@ -309,7 +309,7 @@ receber:
         resposta = receberMensagem();
 
         if (resposta.inicio != MARCADOR_INICIO) {
-            printf("erro marcador inicio resposta\n");
+            //printf("erro marcador inicio resposta\n");
             goto receber;
         }
 
@@ -321,7 +321,7 @@ receber:
         incseq(&sequencia);
     }
 
-    printf("terminei de mandar dados\n");
+    //printf("terminei de mandar dados\n");
 
     free(aux.dados);
 
@@ -334,7 +334,7 @@ receber:
 
     mandarMensagem(aux);
     pclose(arq);
-    printf("saindo ls\n");
+    //printf("saindo ls\n");
 }
 
 void executa_cd(msg_info msg){
@@ -348,7 +348,7 @@ void executa_cd(msg_info msg){
     memcpy(caminho, msg.dados, msg.tamanho);
     caminho[TAM_MAX_DADOS] = '\0';
 
-    printf("dando cd para '%s'\n", caminho);
+    //printf("dando cd para '%s'\n", caminho);
 
     errno = 0;
     if (chdir(caminho) != 0) {
@@ -359,7 +359,7 @@ void executa_cd(msg_info msg){
 
         aux.tipo = TIPO_ERRO;
     } else {
-        printf("CD OK! nome do diretorio atual: %s\n", caminho);
+        //printf("CD OK! nome do diretorio atual: %s\n", caminho);
 
         aux.tamanho = strlen(caminho) + 1;
         memcpy(aux.dados, caminho, msg.tamanho);
@@ -396,7 +396,7 @@ void executa_mkdir(msg_info msg){
 }
 
 void get(char *comando) {
-    printf("entrando get\n");
+    //printf("entrando get\n");
 
     comando += 4; // consome "get "
     comando[TAM_MAX_DADOS - 1] = '\0'; // limitar string
