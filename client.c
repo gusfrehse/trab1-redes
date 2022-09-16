@@ -81,7 +81,7 @@ int main() {
     mandarMensagem(envio);
 
     finalizaSocket();
-    printf("Fim transmissão\n");
+    //printf("Fim transmissão\n");
 }
 
 // vim: set ts=4 sts=4 sw=4 et:

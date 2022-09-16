@@ -618,7 +618,7 @@ remandar_comando:
 }
 
 void cd(char *terminal) {
-    printf("entrando cd\n");
+    //printf("entrando cd\n");
     terminal += 3; // ignora o 'cd '
     terminal[strcspn(terminal, "\n")] = '\0';
 
@@ -639,15 +639,15 @@ resposta_comando:
     resposta = receberMensagem();
 
     if (resposta.inicio != MARCADOR_INICIO) {
-        printf("inicio errado\n");
+        //printf("inicio errado\n");
         free(resposta.dados);
         goto resposta_comando;
     }
 
     if (resposta.tipo == TIPO_OK) {
-        printf("OK! Mudado de diretório\n");
+        //printf("OK! Mudado de diretório\n");
     } else if (resposta.tipo == TIPO_ERRO) {
-        printf("tipo erro\n");
+        //printf("tipo erro\n");
         for (int i = 0; i < resposta.tamanho; i++) {
             putchar(resposta.dados[i]);
         }
@@ -655,16 +655,16 @@ resposta_comando:
         putchar('\n'); // talvez nao precise
         free(resposta.dados);
     } else if (resposta.tipo == TIPO_NACK || resposta.tipo == TIPO_TIMEOUT) {
-        printf("tipo nack ou time out\n");
+        //printf("tipo nack ou time out\n");
         free(resposta.dados);
         goto start;
     }
 
-    printf("saindo cd\n");
+    //printf("saindo cd\n");
 }
 
 void mkdir_client(char *terminal) {
-    printf("entrando mkdir\n");
+    //printf("entrando mkdir\n");
     terminal += 6; // ignora o 'mkdir '
     terminal[strcspn(terminal, "\n")] = '\0';
 
@@ -685,15 +685,15 @@ receber_resposta:
     resposta = receberMensagem();
 
     if (resposta.inicio != MARCADOR_INICIO) {
-        printf("inicio errado\n");
+        //printf("inicio errado\n");
         free(resposta.dados);
         goto receber_resposta;
     }
  
     if (resposta.tipo == TIPO_OK) {
-        printf("OK! Criado diretório %s\n", resposta.dados);
+        //printf("OK! Criado diretório %s\n", resposta.dados);
     } else if (resposta.tipo == TIPO_ERRO) {
-        printf("tipo erro\n");
+        //printf("tipo erro\n");
         for (int i = 0; i < resposta.tamanho; i++) {
             putchar(resposta.dados[i]);
         }
@@ -701,16 +701,16 @@ receber_resposta:
         putchar('\n'); // talvez nao precise
         free(resposta.dados);
     } else if (resposta.tipo == TIPO_NACK || resposta.tipo == TIPO_TIMEOUT) {
-        printf("tipo nack ou timeout\n");
+        //printf("tipo nack ou timeout\n");
         free(resposta.dados);
         goto start;
     }
 
-    printf("saindo mkdir\n");
+    //printf("saindo mkdir\n");
 }
 
 void put_client(char *terminal) {
-    printf("entrando put\n");
+    //printf("entrando put\n");
 
     terminal += 4; // consome "put "
     terminal[TAM_MAX_DADOS - 1] = '\0'; // limitar string
@@ -766,7 +766,7 @@ resposta_comando:
     }
 
     assert(resposta.tipo == TIPO_ACK);
-    printf("recebi ack da resposta do nome\n");
+    //printf("recebi ack da resposta do nome\n");
 
     fseek(infile, 0, SEEK_END);
     uint32_t tam_arq = ftell(infile);
@@ -820,7 +820,7 @@ recebe_resposta_tamanho:
     }
 
     assert(resposta_tamanho.tipo == TIPO_ACK);
-    printf("recebi ack do tamanho\n");
+    //printf("recebi ack do tamanho\n");
 
     uint8_t buff[TAM_MAX_DADOS];
     uint8_t sequencia = 0;
@@ -842,13 +842,13 @@ receber_resposta_dados:
         resposta_dados = receberMensagem();
 
         if (resposta_dados.inicio != MARCADOR_INICIO) {
-            printf("erro marcador inicio resposta\n");
+            //printf("erro marcador inicio resposta\n");
             free(resposta_dados.dados);
             goto receber_resposta_dados;
         }
 
         if (resposta_dados.tipo == TIPO_NACK || resposta_dados.tipo == TIPO_TIMEOUT) {
-            printf("nack resposta\n");
+            //printf("nack resposta\n");
             free(resposta_dados.dados);
             goto remandar_dados;
         }
@@ -868,7 +868,7 @@ receber_resposta_dados:
     mandarMensagem(fim_tx);
 
     fclose(infile);
-    printf("saindo put\n");
+    //printf("saindo put\n");
 }
 
 void local_ls(char *nome, int tam){
@@ -886,7 +886,7 @@ void local_ls(char *nome, int tam){
     while((lidos = fread(dados, 1, tam, arq)) != 0){
         //printf("mandando %d bytes\n", lidos);
         //msg_info resposta;
-        printf("%s", dados);
+        //printf("%s", dados);
     }
     pclose(arq);
 }
@@ -900,7 +900,7 @@ void local_cd(char *nome_dir, int tam){
         char *err_str = strerror(errno);
         printf("%s\n", err_str);
     } else {
-        printf("CD OK! nome do diretorio atual: %s\n", nome_dir);
+        //printf("CD OK! nome do diretorio atual: %s\n", nome_dir);
     }
 }
 
@@ -913,6 +913,7 @@ void local_mkdir(char *nome_dir, int tam){
         char *err_str = strerror(errno);
         printf("%s\n", err_str);
     }
-    else 
-        printf("Diretório %s criado\n", nome_dir);
+    else { 
+        //printf("Diretório %s criado\n", nome_dir);
+    }
 }
