@@ -12,6 +12,7 @@ void get(char *comando) {
 
     comando += 4; // consome "get "
     comando[TAM_MAX_DADOS - 1] = '\0'; // limitar string
+    comando[strcspn(comando, "\n")] = '\0';
 
     msg_info info;
     info.inicio = MARCADOR_INICIO;
@@ -55,9 +56,13 @@ resposta_comando:
     }
 
     // ok!
+    printf("resposta, é para ser descritor com nome do arquivo!\n");
+    imprimirMensagem(resposta);
     assert(resposta.tipo == TIPO_DESCRITOR_ARQUIVO);
 
-    int tamanho_arq = resposta.dados[0] + (resposta.dados[1] << 8) + (resposta.dados[2]) << 16 + (resposta.dados[3] << 24);
+    uint32_t tamanho_arq = *((uint32_t *) resposta.dados);
+
+    printf("arquivo é de tamanho %d\n", tamanho_arq);
 
     int pos = 0;
     uint8_t *buffer = calloc(tamanho_arq, sizeof(uint8_t));
@@ -91,6 +96,12 @@ resposta_comando:
             continue;
         }
 
+        if (info.tipo == TIPO_FIM_TX) {
+            printf("fim tx\n");
+            free(info.dados);
+            break;
+        }
+
         if (info.sequencia != sequencia) {
             printf("ERRO sequencia get obtido: %d esperado: %d\n", info.sequencia, sequencia);
 
@@ -103,15 +114,11 @@ resposta_comando:
             continue;
         }
 
-        if (info.tipo == TIPO_FIM_TX) {
-            printf("fim tx\n");
-            free(info.dados);
-            break;
-        }
-
         for (int i = 0; i < info.tamanho; i++) {
             buffer[pos++] = info.dados[i];
+            putchar(info.dados[i]);
         }
+        putchar('\n');
         
         free(info.dados);
 
@@ -126,6 +133,14 @@ resposta_comando:
 
         incseq(&sequencia);
     }
+
+    FILE *outFile = fopen(comando, "w");
+    if (!outFile) {
+        perror("erro ao criar arquivo local");
+        return;
+    }
+
+    fwrite(buffer, 1, tamanho_arq, outFile);
 
     printf("saindo get\n");
 }
@@ -287,11 +302,11 @@ int main() {
             printf("$: ");
             fgets(terminal, 98, stdin);
             continue;
-        } else if (!strcmp(terminal, "get")) {
-
-            envio.tamanho = 0;
-            envio.tipo = TIPO_GET;
-
+        } else if (!strncmp(terminal, "get", 3)) {
+            get(terminal);
+            printf("$: ");
+            fgets(terminal, 98, stdin);
+            continue;
         } else if (!strcmp(terminal, "put")) {
 
             envio.tamanho = 0;
