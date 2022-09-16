@@ -375,7 +375,8 @@ void executa_mkdir(msg_info msg){
     aux.dados = malloc(TAM_MAX_DADOS);
 
     char nome_dir[100];
-    strcpy(nome_dir, msg.dados);
+    memcpy(nome_dir, msg.dados, msg.tamanho);
+    nome_dir[msg.tamanho] = '\0';
 
     if(mkdir(nome_dir, 0755) != 0){
         char *err_str = strerror(errno);
