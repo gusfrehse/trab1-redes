@@ -270,6 +270,7 @@ void get(char *comando) {
     info.dados = comando;
     info.paridade = calcularParidade(info.tamanho, info.dados);
 
+remandar_comando:
     mandarMensagem(info);
 
 resposta_comando:
@@ -278,6 +279,11 @@ resposta_comando:
     if (resposta.inicio != MARCADOR_INICIO) {
         free(resposta.dados);
         goto resposta_comando;
+    }
+
+    if (resposta.tipo == TIPO_TIMEOUT) {
+        free(resposta.dados);
+        goto remandar_comando;
     }
 
     if (resposta.paridade != calcularParidade(resposta.tamanho, resposta.dados)) {
@@ -290,7 +296,7 @@ resposta_comando:
 
     if (resposta.tipo == TIPO_NACK) {
         free(resposta.dados);
-        goto resposta_comando;
+        goto remandar_comando;
     }
 
     if (resposta.tipo == TIPO_ERRO) {
@@ -400,6 +406,7 @@ void ls(char *comando) {
 
     uint8_t sequencia = 0;
 
+    msg_info resposta = {};
     msg_info info;
     info.inicio = MARCADOR_INICIO;
     info.tamanho = strlen(comando) + 1;
@@ -408,8 +415,7 @@ void ls(char *comando) {
     info.dados = comando;
     info.paridade = calcularParidade(info.tamanho, info.dados);
 
-
-
+remandar_comando:
     mandarMensagem(info);
 
     while (1) {
@@ -420,6 +426,12 @@ void ls(char *comando) {
             free(info.dados);
             continue;
         }
+
+        if (info.tipo == TIPO_TIMEOUT) {
+            free(resposta.dados);
+            goto remandar_comando;
+        }
+
 
         if (info.paridade != calcularParidade(info.tamanho, info.dados)) {
             printf("ERRO paridade ls\n");
@@ -474,7 +486,7 @@ void cd(char *terminal) {
     terminal += 3; // ignora o 'cd '
     terminal[strcspn(terminal, "\n")] = '\0';
 
-    msg_info info;
+    msg_info info = {};
     info.inicio = MARCADOR_INICIO;
     info.tamanho = strlen(terminal);
     info.sequencia = 0; // TODO
@@ -487,12 +499,13 @@ void cd(char *terminal) {
 start:
     mandarMensagem(info);
 
+resposta_comando:
     resposta = receberMensagem();
 
     if (resposta.inicio != MARCADOR_INICIO) {
         printf("inicio errado\n");
         free(resposta.dados);
-        goto start;
+        goto resposta_comando;
     }
 
     if (resposta.tipo == TIPO_OK) {
@@ -505,8 +518,8 @@ start:
 
         putchar('\n'); // talvez nao precise
         free(resposta.dados);
-    } else if (resposta.tipo == TIPO_NACK) {
-        printf("tipo nack\n");
+    } else if (resposta.tipo == TIPO_NACK || resposta.tipo == TIPO_TIMEOUT) {
+        printf("tipo nack ou time out\n");
         free(resposta.dados);
         goto start;
     }
@@ -532,14 +545,15 @@ void mkdir_client(char *terminal) {
 start:
     mandarMensagem(info);
 
+receber_resposta:
     resposta = receberMensagem();
 
     if (resposta.inicio != MARCADOR_INICIO) {
         printf("inicio errado\n");
         free(resposta.dados);
-        goto start;
+        goto receber_resposta;
     }
-
+ 
     if (resposta.tipo == TIPO_OK) {
         printf("OK! Criado diretório\n");
     } else if (resposta.tipo == TIPO_ERRO) {
@@ -550,8 +564,8 @@ start:
 
         putchar('\n'); // talvez nao precise
         free(resposta.dados);
-    } else if (resposta.tipo == TIPO_NACK) {
-        printf("tipo nack\n");
+    } else if (resposta.tipo == TIPO_NACK || resposta.tipo == TIPO_TIMEOUT) {
+        printf("tipo nack ou timeout\n");
         free(resposta.dados);
         goto start;
     }

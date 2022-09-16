@@ -16,6 +16,8 @@
 #define MSG_SEQ(byte1, byte2) ((((byte1) << 2) | ((byte2) >> 6)) & 0b1111)
 #define MSG_TIPO(byte1, byte2) (byte2 & 0b111111)
 
+#define TIMEOUT_SEC 2
+
 const msg_info ack = {
     .inicio = MARCADOR_INICIO,
     .tamanho = 0,
@@ -43,7 +45,14 @@ void iniciaSocket(){
     //joao: enp1s0f0
     //gus1: enp34s0
     //gus2: enp2s0
-    soq = ConexaoRawSocket("enp1s0f0");
+    soq = ConexaoRawSocket("enp2s0");
+
+    // timeout
+    struct timeval timeout;
+    timeout.tv_sec = TIMEOUT_SEC;
+    timeout.tv_usec = 0;
+
+    setsockopt(soq, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 }
 
 int pegaSocket() {
@@ -130,12 +139,16 @@ msg_info receberMensagem() {
     // como n é representado em 6 bits entao n <= 2^6 = 64 e max == 4 + 64 bytes = 68 bytes
     // tamanho min da msg -> n == 0 -> 32 bits = 4 bytes
     uint8_t msg[68];
-    msg_info info;
+    msg_info info = {};
 
     int lidos = recv(soq, msg, sizeof(msg), 0);
 
     if (lidos < 0) {
         perror("receberMensagem(): recv()");
+
+        info.inicio = MARCADOR_INICIO;
+        info.tipo = TIPO_TIMEOUT;
+
         return info;
     }
 

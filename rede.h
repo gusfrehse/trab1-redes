@@ -19,6 +19,7 @@
 #define TIPO_DESCRITOR_ARQUIVO (0b00011000)
 #define TIPO_DADOS             (0b00100000)
 #define TIPO_PUT               (0b00001010)
+#define TIPO_TIMEOUT           (0b01000000)
 
 #define TAM_MAX_DADOS 63
 

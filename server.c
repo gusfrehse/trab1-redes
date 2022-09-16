@@ -20,6 +20,7 @@ int main() {
 
     for (;;) {
 
+        usleep(500000);
         printf("esperando msg..\n");
         recebe = receberMensagem();
 
@@ -66,8 +67,8 @@ int main() {
 
         } else {
 
-            //printf("Recebi algo em que o marcador de início não bate:\n");
-            //imprimirMensagem(recebe);
+            printf("Recebi algo em que o marcador de início não bate:\n");
+            imprimirMensagem(recebe);
 
         }
 
