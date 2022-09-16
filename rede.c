@@ -41,7 +41,8 @@ uint8_t ultimo_tam_seq_tipo = 0;
 void iniciaSocket(){
     //enp1s0f0
     //enp34s0
-    soq = ConexaoRawSocket("enp34s0");
+    //enp2s0
+    soq = ConexaoRawSocket("enp2s0");
 }
 
 int pegaSocket() {
