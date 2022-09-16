@@ -45,7 +45,7 @@ void iniciaSocket(){
     //joao: enp1s0f0
     //gus1: enp34s0
     //gus2: enp2s0
-    soq = ConexaoRawSocket("enp2s0");
+    soq = ConexaoRawSocket("enp1s0f0");
 
     // timeout
     struct timeval timeout;
@@ -144,7 +144,7 @@ msg_info receberMensagem() {
     int lidos = recv(soq, msg, sizeof(msg), 0);
 
     if (lidos < 0) {
-        perror("receberMensagem(): recv()");
+        //("receberMensagem(): recv()");
 
         info.inicio = MARCADOR_INICIO;
         info.tipo = TIPO_TIMEOUT;
@@ -215,7 +215,7 @@ void imprimirMensagem(msg_info msg) {
 
     verificaTipoMensagem(msg.tipo);
 
-    printf("\tdados:     '", msg.tamanho);
+    printf("\tdados:     ");
 
     for (int i = 0; i < msg.tamanho; i++) {
         printf("%x ", msg.dados[i]);

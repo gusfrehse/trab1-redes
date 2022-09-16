@@ -54,7 +54,11 @@ void executa_get(msg_info msg) {
     descritor.tamanho = 4;
     descritor.sequencia = 0;
     descritor.tipo = TIPO_DESCRITOR_ARQUIVO;
-    descritor.dados = (uint8_t *) &arq_tam;
+    descritor.dados = malloc(4);
+    descritor.dados[0] = arq_tam & 0b11111111;
+    descritor.dados[1] = (arq_tam >> 8) & 0b11111111;
+    descritor.dados[2] = (arq_tam >> 16) & 0b11111111;
+    descritor.dados[3] = (arq_tam >> 24) & 0b11111111;
     descritor.paridade = calcularParidade(descritor.tamanho, descritor.dados);
 
 mandar_descritor:
