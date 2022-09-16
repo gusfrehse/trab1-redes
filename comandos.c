@@ -281,11 +281,6 @@ resposta_comando:
         goto resposta_comando;
     }
 
-    if (resposta.tipo == TIPO_TIMEOUT) {
-        free(resposta.dados);
-        goto remandar_comando;
-    }
-
     if (resposta.paridade != calcularParidade(resposta.tamanho, resposta.dados)) {
         free(resposta.dados);
         
@@ -294,7 +289,7 @@ resposta_comando:
         goto resposta_comando;
     }
 
-    if (resposta.tipo == TIPO_NACK) {
+    if (resposta.tipo == TIPO_NACK || resposta.tipo == TIPO_TIMEOUT) {
         free(resposta.dados);
         goto remandar_comando;
     }
@@ -314,7 +309,8 @@ resposta_comando:
     imprimirMensagem(resposta);
     assert(resposta.tipo == TIPO_DESCRITOR_ARQUIVO);
 
-    uint32_t tamanho_arq = *((uint32_t *) resposta.dados);
+    //uint32_t tamanho_arq = *((uint32_t *) resposta.dados);
+    uint32_t tamanho_arq = resposta.dados[0] | (resposta.dados[1] << 8) | (resposta.dados[2] << 16) | (resposta.dados[3] << 24);
 
     printf("arquivo é de tamanho %d\n", tamanho_arq);
 
@@ -394,7 +390,8 @@ resposta_comando:
         return;
     }
 
-    fwrite(buffer, 1, tamanho_arq, outFile);
+    int escritos = fwrite(buffer, 1, tamanho_arq, outFile);
+    printf("%d bytes escritos\n", escritos);
 
     printf("saindo get\n");
 }
@@ -419,21 +416,20 @@ remandar_comando:
     mandarMensagem(info);
 
     while (1) {
-        info = receberMensagem();
+        resposta = receberMensagem();
 
-        if (info.inicio != MARCADOR_INICIO) {
+        if (resposta.inicio != MARCADOR_INICIO) {
             printf("ERRO marcador inicio ls\n");
-            free(info.dados);
+            free(resposta.dados);
             continue;
         }
 
-        if (info.tipo == TIPO_TIMEOUT) {
+        if (resposta.tipo == TIPO_TIMEOUT) {
             free(resposta.dados);
             goto remandar_comando;
         }
 
-
-        if (info.paridade != calcularParidade(info.tamanho, info.dados)) {
+        if (resposta.paridade != calcularParidade(resposta.tamanho, resposta.dados)) {
             printf("ERRO paridade ls\n");
 
             mandarMensagem(nack);
@@ -442,32 +438,32 @@ remandar_comando:
             continue;
         }
 
-        if (info.tipo == TIPO_FIM_TX) {
+        if (resposta.tipo == TIPO_FIM_TX) {
             printf("fim tx\n");
-            free(info.dados);
+            free(resposta.dados);
             break;
         }
 
-        if (info.sequencia != sequencia) {
-            printf("ERRO sequencia ls obtido: %d esperado: %d\n", info.sequencia, sequencia);
-            imprimirMensagem(info);
+        if (resposta.sequencia != sequencia) {
+            printf("ERRO sequencia ls obtido: %d esperado: %d\n", resposta.sequencia, sequencia);
+            imprimirMensagem(resposta);
 
             msg_info nseq = nack;
             nseq.sequencia = sequencia;
 
             mandarMensagem(nseq);
 
-            free(info.dados);
+            free(resposta.dados);
             continue;
         }
 
-        for (int i = 0; i < info.tamanho; i++) {
-            putchar(info.dados[i]);
+        for (int i = 0; i < resposta.tamanho; i++) {
+            putchar(resposta.dados[i]);
         }
         
-        free(info.dados);
+        free(resposta.dados);
 
-        if (info.tipo == TIPO_ERRO) {
+        if (resposta.tipo == TIPO_ERRO) {
             printf("foi um erro\n");
             break;
         }
