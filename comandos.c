@@ -2,49 +2,6 @@
 #include <stdio.h>
 #include "comandos.h"
 
-void executa_put(msg_info msg) {
-    printf("entrando put\n");
-    msg_info aux = {};
-    msg_info descritor_ok = {};
-    aux.inicio = MARCADOR_INICIO;
-    aux.tamanho = TAM_MAX_DADOS;
-    aux.dados = malloc(TAM_MAX_DADOS);
-
-    if (aux.dados == NULL){
-        printf("Erro no malloc\n");
-        exit(1);
-    }
-
-    printf("Arquivo: %s\n", msg.dados);
-
-    FILE *arq = fopen(msg.dados, "w");
-    if (arq == NULL){
-        // erro ao ler arquivo
-        char *erro_str = strerror(errno);
-        printf("Erro FOPEN\n");
-
-        msg_info erro;
-        erro.inicio = MARCADOR_INICIO;
-        erro.tipo = TIPO_ERRO;
-        erro.sequencia = 0;
-
-        erro.dados = malloc(TAM_MAX_DADOS);
-        if (!erro.dados) {
-            printf("erro malloc\n");
-            exit(1);
-        }
-
-        memcpy(erro.dados, erro_str, TAM_MAX_DADOS);
-        erro.dados[TAM_MAX_DADOS - 1] = '\0';
-        erro.tamanho = strlen(erro.dados);
-        erro.paridade = calcularParidade(erro.tamanho, erro.dados);
-        mandarMensagem(erro);
-
-        return;
-    }
-
-}
-
 void executa_get(msg_info msg) {
     printf("entrando get\n");
     msg_info aux = {};
