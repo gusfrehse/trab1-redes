@@ -26,6 +26,9 @@ int main() {
 
         if (recebe.inicio == MARCADOR_INICIO) {
 
+            if (recebe.tipo == TIPO_TIMEOUT)
+                continue;
+
             printf("main: Recebi mensagem ok:\n");
             imprimirMensagem(recebe);
 
