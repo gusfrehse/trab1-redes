@@ -132,6 +132,139 @@ receber:
 
 }
 
+void executa_put(msg_info msg){
+    printf("entrando no put\n");
+    msg_info aux = {};
+    aux.inicio = MARCADOR_INICIO;
+
+    char nome_arq[100] = {};
+    strcpy(nome_arq, msg.dados);
+    printf("Arquivo: %s\n", nome_arq);
+
+    FILE *arq = fopen(nome_arq , "w");
+    if(!arq) {
+        // erro ao ler arquivo
+        char *erro_str = strerror(errno);
+        printf("Erro FOPEN\n");
+
+        msg_info erro;
+        erro.inicio = MARCADOR_INICIO;
+        erro.tipo = TIPO_ERRO;
+        erro.sequencia = 0;
+
+        erro.dados = malloc(TAM_MAX_DADOS);
+        if (!erro.dados) {
+            printf("erro malloc\n");
+            exit(1);
+        }
+
+        memcpy(erro.dados, erro_str, TAM_MAX_DADOS);
+        erro.dados[TAM_MAX_DADOS - 1] = '\0';
+        erro.tamanho = strlen(erro.dados);
+        erro.paridade = calcularParidade(erro.tamanho, erro.dados);
+        mandarMensagem(erro);
+
+        return;
+    }
+
+    mandarMensagem(ack);
+    
+receber_tam:
+    aux = receberMensagem();
+    
+    if(aux.inicio != MARCADOR_INICIO || aux.paridade != calcularParidade(aux.tamanho, aux.dados)){
+        free(aux.dados);
+        goto receber_tam; 
+    }
+
+    mandarMensagem(ack);
+
+    uint32_t tamanho_arq = aux.dados[0] | (aux.dados[1] << 8) | (aux.dados[2] << 16) | (aux.dados[3] << 24);
+
+    printf("O arquivo é de tamanho %d\n", tamanho_arq);
+
+    uint8_t sequencia = 0;
+
+    msg_info info = {};
+
+    int pos = 0;
+    uint8_t *buffer = calloc(tamanho_arq, sizeof(uint8_t));
+    if(!buffer){
+        perror("put: malloc");
+        exit(1);
+    }
+
+    while (1) {
+        info = receberMensagem();
+
+        if (info.inicio != MARCADOR_INICIO) {
+            printf("ERRO marcador inicio put\n");
+            free(info.dados);
+            continue;
+        }
+
+        if (info.paridade != calcularParidade(info.tamanho, info.dados)) {
+            printf("ERRO paridade put\n");
+
+            mandarMensagem(nack);
+
+            free(info.dados);
+            continue;
+        }
+
+        if (info.tipo == TIPO_FIM_TX) {
+            printf("fim tx\n");
+            free(info.dados);
+            break;
+        }
+
+        if (info.sequencia != sequencia) {
+            printf("ERRO sequencia put obtido: %d esperado: %d\n", info.sequencia, sequencia);
+
+            msg_info nseq = nack;
+            nseq.sequencia = sequencia;
+
+            mandarMensagem(nseq);
+
+            free(info.dados);
+            continue;
+        }
+
+        for (int i = 0; i < info.tamanho; i++) {
+            buffer[pos++] = info.dados[i];
+            putchar(info.dados[i]);
+        }
+        putchar('\n');
+        
+        free(info.dados);
+
+        if (info.tipo == TIPO_ERRO) {
+            printf("foi um erro\n");
+            break;
+        }
+
+        msg_info aseq = ack;
+        aseq.sequencia = sequencia;
+        mandarMensagem(aseq);
+
+        incseq(&sequencia);
+    }
+
+    FILE *outFile = fopen(nome_arq, "w");
+    if (!outFile) {
+        perror("erro ao criar arquivo local");
+        return;
+    }
+
+    int escritos = fwrite(buffer, 1, tamanho_arq, outFile);
+    printf("%d bytes escritos\n", escritos);
+    fclose(outFile);
+
+    printf("saindo put\n");
+
+    fclose(arq);
+}
+
 void executa_ls(msg_info msg) {
     printf("entrando ls\n");
     msg_info aux = {};
@@ -439,7 +572,7 @@ remandar_comando:
 
             mandarMensagem(nack);
 
-            free(info.dados);
+            free(resposta.dados);
             continue;
         }
 
@@ -556,7 +689,7 @@ receber_resposta:
     }
  
     if (resposta.tipo == TIPO_OK) {
-        printf("OK! Criado diretório\n");
+        printf("OK! Criado diretório %s\n", resposta.dados);
     } else if (resposta.tipo == TIPO_ERRO) {
         printf("tipo erro\n");
         for (int i = 0; i < resposta.tamanho; i++) {

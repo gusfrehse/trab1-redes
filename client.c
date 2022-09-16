@@ -60,14 +60,13 @@ int main() {
             printf("$: ");
             fgets(terminal, 98, stdin);
             continue;
-        } else if (!strcmp(terminal, "put")) {
-
-            envio.tamanho = 0;
-            envio.tipo = TIPO_PUT;
-
-        } else {
+        } else if (!strncmp(terminal, "put", 3)) {
+            //put_client(terminal);
+            printf("$: ");
+            fgets(terminal, 98, stdin);
+            continue;
+        } else 
             printf("%s: command not found\n", terminal);
-        }
 
         //mandarMensagem(envio);
 
