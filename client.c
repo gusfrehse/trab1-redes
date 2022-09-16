@@ -133,6 +133,7 @@ resposta_comando:
 void ls(char *comando) {
     printf("entrando ls\n");
     comando[TAM_MAX_DADOS - 1] = '\0'; // limitar string
+    comando[strcspn(comando, "\n")] = '\0';
 
     uint8_t sequencia = 0;
 
@@ -143,6 +144,8 @@ void ls(char *comando) {
     info.tipo = TIPO_LS;
     info.dados = comando;
     info.paridade = calcularParidade(info.tamanho, info.dados);
+
+
 
     mandarMensagem(info);
 
@@ -164,8 +167,15 @@ void ls(char *comando) {
             continue;
         }
 
+        if (info.tipo == TIPO_FIM_TX) {
+            printf("fim tx\n");
+            free(info.dados);
+            break;
+        }
+
         if (info.sequencia != sequencia) {
             printf("ERRO sequencia ls obtido: %d esperado: %d\n", info.sequencia, sequencia);
+            imprimirMensagem(info);
 
             msg_info nseq = nack;
             nseq.sequencia = sequencia;
@@ -174,12 +184,6 @@ void ls(char *comando) {
 
             free(info.dados);
             continue;
-        }
-
-        if (info.tipo == TIPO_FIM_TX) {
-            printf("fim tx\n");
-            free(info.dados);
-            break;
         }
 
         for (int i = 0; i < info.tamanho; i++) {
