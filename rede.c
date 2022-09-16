@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <assert.h>
+#include <time.h>
 
 #define TAM_MIN_MSG (16)
 
@@ -49,6 +50,24 @@ int pegaSocket() {
 
 void finalizaSocket(){
     close(soq);
+}
+
+int time_out(){
+    time_t inicio = time(0);
+    time_t tempo_corrido = 0;
+    msg_info msg;
+    int recebeu_msg = 0;
+
+    while(tempo_corrido < 3 && recebeu_msg != 1){
+        msg = receberMensagem();
+        if(msg.inicio == MARCADOR_INICIO)
+            recebeu_msg = 1;
+        tempo_corrido += time(0) - inicio;
+    }
+    
+    if(recebeu_msg)
+        return 1;
+    return 0;
 }
 
 msg_info montaMsg(uint8_t tam, uint8_t seq, uint8_t tipo, uint8_t* dados){
