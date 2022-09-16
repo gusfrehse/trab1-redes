@@ -43,7 +43,7 @@ void iniciaSocket(){
     //joao: enp1s0f0
     //gus1: enp34s0
     //gus2: enp2s0
-    soq = ConexaoRawSocket("enp2s0");
+    soq = ConexaoRawSocket("enp1s0f0");
 }
 
 int pegaSocket() {
