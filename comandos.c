@@ -884,9 +884,7 @@ void local_ls(char *nome, int tam){
     int lidos;
     char *dados = malloc(tam);
     while((lidos = fread(dados, 1, tam, arq)) != 0){
-        //printf("mandando %d bytes\n", lidos);
-        //msg_info resposta;
-        //printf("%s", dados);
+        printf("%s", dados);
     }
     pclose(arq);
 }
