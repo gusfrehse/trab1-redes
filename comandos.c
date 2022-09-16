@@ -96,7 +96,6 @@ receber_descritor_ok:
         aux.tipo = TIPO_DADOS;
         aux.paridade = calcularParidade(aux.tamanho, aux.dados);
         aux.sequencia = sequencia;
-        printf("%10s", aux.dados); // TODO remover pode dar segfault
 
 remandar:
         mandarMensagem(aux);
@@ -105,14 +104,10 @@ receber:
         resposta = receberMensagem();
 
         if (resposta.inicio != MARCADOR_INICIO) {
-            // TODO free possivelmente 
-            //printf("erro marcador inicio resposta\n");
             goto receber;
         }
 
-        if (resposta.tipo == TIPO_NACK) {
-            // TODO free possivelmente e timeout quase certeza
-            //printf("nack resposta\n");
+        if (resposta.tipo == TIPO_NACK || resposta.tipo == TIPO_TIMEOUT) {
             goto remandar;
         }
 
@@ -548,7 +543,7 @@ void ls(char *comando) {
     msg_info info;
     info.inicio = MARCADOR_INICIO;
     info.tamanho = strlen(comando) + 1;
-    info.sequencia = 0; // TODO
+    info.sequencia = 0;
     info.tipo = TIPO_LS;
     info.dados = comando;
     info.paridade = calcularParidade(info.tamanho, info.dados);
@@ -626,7 +621,7 @@ void cd(char *terminal) {
     msg_info info = {};
     info.inicio = MARCADOR_INICIO;
     info.tamanho = strlen(terminal);
-    info.sequencia = 0; // TODO
+    info.sequencia = 0;
     info.tipo = TIPO_CD;
     info.dados = terminal;
     info.paridade = calcularParidade(info.tamanho, info.dados);
@@ -672,7 +667,7 @@ void mkdir_client(char *terminal) {
     msg_info info;
     info.inicio = MARCADOR_INICIO;
     info.tamanho = strlen(terminal);
-    info.sequencia = 0; // TODO
+    info.sequencia = 0;
     info.tipo = TIPO_MKDIR;
     info.dados = terminal;
     info.paridade = calcularParidade(info.tamanho, info.dados);

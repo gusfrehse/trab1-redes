@@ -20,7 +20,7 @@ int main() {
 
     msg_info recebe = {};
     msg_info envio = {};
-    envio.sequencia = 0; // TODO
+    envio.sequencia = 0;
     envio.inicio = MARCADOR_INICIO;
 
     while (strncmp(terminal, "exit", 4)) {
