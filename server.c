@@ -212,6 +212,8 @@ void executa_cd(msg_info msg){
     memcpy(caminho, msg.dados, msg.tamanho);
     caminho[TAM_MAX_DADOS] = '\0';
 
+    printf("dando cd para '%s'\n", caminho);
+
     errno = 0;
     if (chdir(caminho) != 0) {
         char *err_str = strerror(errno);
@@ -245,7 +247,7 @@ int main() {
 
         if (recebe.inicio == MARCADOR_INICIO) {
 
-            printf("Recebi mensagem ok:\n");
+            printf("main: Recebi mensagem ok:\n");
             imprimirMensagem(recebe);
 
             if (calcularParidade(recebe.tamanho, recebe.dados) != recebe.paridade) {
