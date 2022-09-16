@@ -146,22 +146,25 @@ void executa_ls(msg_info msg) {
 
     printf("Comando: %s\n", msg.dados);
 
-    FILE *arq = popen(aux.dados, "r");
+    FILE *arq = popen(msg.dados, "r");
     if (arq == NULL){
         printf("Erro POPEN\n");
         exit(1);
     }
 
+    printf("vou comecar a mandar dados\n");
+
     uint8_t sequencia = 0;
     int lidos;
     while((lidos = fread(aux.dados, 1, TAM_MAX_DADOS, arq)) != 0){
+        printf("mandando %d bytes\n", lidos);
         msg_info resposta;
 
-        aux.tamanho = lidos;
         aux.inicio = MARCADOR_INICIO;
+        aux.tamanho = lidos;
+        aux.sequencia = sequencia;
         aux.tipo = TIPO_DADOS;
         aux.paridade = calcularParidade(aux.tamanho, aux.dados);
-        aux.sequencia = sequencia; //TODO sequencia
         printf("%s", aux.dados);
 
 remandar:
@@ -182,6 +185,8 @@ receber:
 
         incseq(&sequencia);
     }
+
+    printf("terminei de mandar dados\n");
 
     free(aux.dados);
 
@@ -235,6 +240,7 @@ int main() {
 
     for (;;) {
 
+        printf("esperando msg..\n");
         recebe = receberMensagem();
 
         if (recebe.inicio == MARCADOR_INICIO) {
