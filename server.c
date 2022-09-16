@@ -233,6 +233,30 @@ void executa_cd(msg_info msg){
     mandarMensagem(aux);
 }
 
+void executa_mkdir(msg_info msg){
+    msg_info aux = {};
+    aux.inicio = MARCADOR_INICIO;
+    aux.tamanho = TAM_MAX_DADOS;
+    aux.dados = malloc(TAM_MAX_DADOS);
+
+    char nome_dir[100];
+    strcpy(nome_dir, msg.dados);
+
+    if(mkdir(nome_dir, 755) != 0){
+        aux.tipo = TIPO_ERRO;
+        aux.dados = 0;
+        aux.paridade = calcularParidade(aux.tamanho, aux.dados);
+        printf("Erro ao criar diretório!");
+    }
+    else {
+        aux.tipo = TIPO_DADOS;
+        aux.dados = nome_dir;
+        aux.paridade = calcularParidade(aux.tamanho, aux.dados);
+        printf("Diretório %s criado\n", nome_dir);
+    }
+    mandarMensagem(aux);
+}
+
 int main() {
     msg_info recebe, envio;
     envio.inicio = MARCADOR_INICIO;
@@ -271,6 +295,9 @@ int main() {
 
             if (recebe.tipo == TIPO_GET) {
                 executa_get(recebe);
+
+            if (recebe.tipo == TIPO_MKDIR){
+                executa_mkdir(recebe);
                 continue;
             }
 
